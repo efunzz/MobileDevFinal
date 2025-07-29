@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, TextInput, Alert } from 'react-native';
-// import { supabase } from '../../lib/supabase'; // 🔒 Commented out for now
+import { supabase } from '../../lib/supabase'; // Uncommented
 
 export default function SignupScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -21,24 +21,22 @@ export default function SignupScreen({ navigation }) {
     setLoading(true);
 
     try {
-      // 🔒 Supabase sign-up logic (commented out)
-      // const { data, error } = await supabase.auth.signUp({ email, password });
+      const { data, error } = await supabase.auth.signUp({ 
+        email, 
+        password 
+      });
 
-      // if (error) {
-      //   Alert.alert('Signup Failed', error.message);
-      // } else if (!data.session) {
-      //   Alert.alert(
-      //     'Success',
-      //     'Account created! Please check your email to verify your account before logging in.',
-      //     [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
-      //   );
-      // } else {
-      //   navigation.navigate('MainApp');
-      // }
-
-      // 🔧 Temporary dev navigation only:
-      Alert.alert('Mock Signup', 'Signup successful (placeholder).');
-      navigation.navigate('Login');
+      if (error) {
+        Alert.alert('Signup Failed', error.message);
+      } else if (!data.session) {
+        // User needs to confirm email
+        Alert.alert(
+          'Success',
+          'Account created! Please check your email to verify your account before logging in.',
+          [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
+        );
+      }
+      // If data.session exists, user is automatically logged in and StackNavigator handles it
     } catch (e) {
       console.error('Signup error:', e);
       Alert.alert('Unexpected Error', e.message);
@@ -94,13 +92,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
-    backgroundColor: '#ffffff', // white background
+    backgroundColor: '#ffffff',
   },
   title: {
     fontSize: 32,
     fontWeight: '600',
     marginBottom: 40,
-    color: '#000000', // black text
+    color: '#000000',
   },
   input: {
     width: '100%',

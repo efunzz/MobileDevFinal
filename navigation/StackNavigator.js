@@ -7,24 +7,31 @@ import TabNavigator from './TabNavigator';
 
 const Stack = createStackNavigator();
 
-export default function StackNavigator() {
+export default function StackNavigator({ session }) {
   return (
-    <Stack.Navigator initialRouteName="Login">
-      <Stack.Screen
-        name="Login"  
-        component={LoginScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="SignUp"
-        component={SignupScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="MainApp"
-        component={TabNavigator}
-        options={{ headerShown: false }}
-      />
+    <Stack.Navigator 
+      initialRouteName={session ? "MainApp" : "Login"}
+      screenOptions={{ headerShown: false }}
+    >
+      {session ? (
+        // User is logged in - show main app
+        <Stack.Screen
+          name="MainApp"
+          component={TabNavigator}
+        />
+      ) : (
+        // User is not logged in - show auth screens
+        <>
+          <Stack.Screen
+            name="Login"
+            component={LoginScreen}
+          />
+          <Stack.Screen
+            name="SignUp"
+            component={SignupScreen}
+          />
+        </>
+      )}
     </Stack.Navigator>
   );
 }

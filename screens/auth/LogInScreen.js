@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, TextInput, Alert } from 'react-native';
-// import { supabase } from '../../lib/supabase'; // 🔒 Commented out Supabase for now
+import { supabase } from '../../lib/supabase'; // Uncommented
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -17,17 +17,15 @@ export default function LoginScreen({ navigation }) {
     console.log('Starting login for:', email);
 
     try {
-      // 🔒 Commented Supabase login
-      // const { error, data } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({ 
+        email, 
+        password 
+      });
 
-      // if (error) {
-      //   Alert.alert('Login Failed', error.message);
-      // } else {
-      //   navigation.navigate('MainApp');
-      // }
-
-      // Temporary placeholder navigation (for dev only)
-      navigation.navigate('MainApp');
+      if (error) {
+        Alert.alert('Login Failed', error.message);
+      }
+      // No need to navigate manually - StackNavigator handles this via session
     } catch (e) {
       console.error('Login caught error:', e);
       Alert.alert('Unexpected Error', e.message);
@@ -83,13 +81,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
-    backgroundColor: '#ffffff', // white background
+    backgroundColor: '#ffffff',
   },
   title: {
     fontSize: 32,
     fontWeight: '600',
     marginBottom: 40,
-    color: '#000000', // black text
+    color: '#000000',
   },
   input: {
     width: '100%',
