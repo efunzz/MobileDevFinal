@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Modal, StyleSheet, Text, Pressable, View, TextInput} from 'react-native';
+import {Modal, StyleSheet, Text, Pressable, View, TextInput, TouchableWithoutFeedback, Keyboard} from 'react-native';
 
 const AddDeckModal = ({ visible, hideModal }) => {
     console.log('=== DEBUG INFO ===');
@@ -34,73 +34,80 @@ const AddDeckModal = ({ visible, hideModal }) => {
       transparent={true}
       visible={visible}
       onRequestClose={hideModal}>
-      <View style={styles.overlay}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            
-            {/* Header */}
-            <Text style={styles.title}>Create New Deck</Text>
-            
-            {/* Deck Name Input */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Deck Name</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter deck name..."
-                placeholderTextColor="#9ca3af"
-                value={deckName}
-                onChangeText={setDeckName}
-                autoFocus={true}
-              />
-            </View>
-
-            {/* Card Counter */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Number of Cards</Text>
-              <View style={styles.counterContainer}>
-                <Pressable 
-                  style={styles.counterButton} 
-                  onPress={decrementCard}
-                >
-                  <Text style={styles.counterButtonText}>−</Text>
-                </Pressable>
+      
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.overlay}>
+          <TouchableWithoutFeedback onPress={() => {}}>
+            <View style={styles.modalContainer}>
+              <View style={styles.modalContent}>
                 
-                <View style={styles.counterDisplay}>
-                  <Text style={styles.counterText}>{cardNumber}</Text>
+                {/* Header */}
+                <Text style={styles.title}>Create New Deck</Text>
+                
+                {/* Deck Name Input */}
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Deck Name</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter deck name..."
+                    placeholderTextColor="#9ca3af"
+                    value={deckName}
+                    onChangeText={setDeckName}
+                  />
+                </View>
+  
+                {/* Card Counter */}
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Number of Cards</Text>
+                  <View style={styles.counterContainer}>
+                    <Pressable 
+                      style={styles.counterButton} 
+                      onPress={decrementCard}
+                    >
+                      <Text style={styles.counterButtonText}>−</Text>
+                    </Pressable>
+                    
+                    <View style={styles.counterDisplay}>
+                      <Text style={styles.counterText}>{cardNumber}</Text>
+                    </View>
+                    
+                    <Pressable 
+                      style={styles.counterButton} 
+                      onPress={incrementCard}
+                    >
+                      <Text style={styles.counterButtonText}>+</Text>
+                    </Pressable>
+                  </View>
+                </View>
+  
+                {/* Action Buttons */}
+                <View style={styles.buttonContainer}>
+                  <Pressable 
+                    style={[styles.button, styles.cancelButton]} 
+                    onPress={() => hideModal()}
+                  >
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </Pressable>
+                  
+                  <Pressable 
+                    style={[styles.button, styles.createButton, !deckName.trim() && styles.disabledButton]} 
+                    onPress={handleCreateDeck}
+                    disabled={!deckName.trim()}
+                  >
+                    <Text style={styles.createButtonText}>Create Deck</Text>
+                  </Pressable>
                 </View>
                 
-                <Pressable 
-                  style={styles.counterButton} 
-                  onPress={incrementCard}
-                >
-                  <Text style={styles.counterButtonText}>+</Text>
-                </Pressable>
               </View>
             </View>
-
-            {/* Action Buttons */}
-            <View style={styles.buttonContainer}>
-              <Pressable 
-                style={[styles.button, styles.cancelButton]} 
-                onPress={() => hideModal()}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </Pressable>
-              
-              <Pressable 
-                style={[styles.button, styles.createButton, !deckName.trim() && styles.disabledButton]} 
-                onPress={handleCreateDeck}
-                disabled={!deckName.trim()}
-              >
-                <Text style={styles.createButtonText}>Create Deck</Text>
-              </Pressable>
-            </View>
-            
-          </View>
+          </TouchableWithoutFeedback>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
+
+  
+   
 };
 
 const styles = StyleSheet.create({
