@@ -1,12 +1,23 @@
 // screens/HomeScreen.js
-
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import React, {useState} from 'react';
+import AddDeckModal from '../components/AddDeckModal';
 
 export default function HomeScreen() {
+  const [modalVisible, setModalVisible] = useState(false);
+  const handleOpenModal = () => {
+    setModalVisible(true);
+  };
+  const handleCloseModal = () => {
+    setModalVisible(false);
+  };
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>🏠 Home Screen</Text>
+      <Pressable style={styles.button} 
+        onPress={handleOpenModal}>
+        <Text style={styles.text}> + </Text>
+      </Pressable>
+      <AddDeckModal visible={modalVisible} hideModal={handleCloseModal} />
     </View>
   );
 }
@@ -20,6 +31,16 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 24,
-    color: '#000',
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  button: {
+    backgroundColor: '#000',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 2,
   },
 });
