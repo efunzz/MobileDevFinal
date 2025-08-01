@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import {Modal, StyleSheet, Text, Pressable, View, TextInput, TouchableWithoutFeedback, Keyboard, FlatList} from 'react-native';
 
 const AddDeckModal = ({ visible, hideModal, onCreateDeck }) => {
-    console.log('=== DEBUG INFO ===');
+console.log('=== DEBUG INFO ===');
   console.log('visible:', visible);
   console.log('hideModal type:', typeof hideModal);
   console.log('hideModal value:', hideModal);

@@ -19,12 +19,20 @@ export default function HomeScreen() {
     setModalVisible(false);
   };
   const handleCreateDeck = (deckName, cardCount) => {
+    // Generate placeholder cards
+  const placeholderCards = Array.from({ length: parseInt(cardCount) }, (_, index) => ({
+    id: `${Date.now()}_${index}`,
+    front: '',
+    back: '',
+    isEmpty: true
+  }));
+
     const newDeck = {
       id: Date.now().toString(),
       name: deckName,
       cardCount: parseInt(cardCount),
-      cards: [], // Will store actual cards later
-      createdAt: new Date(),
+      cards: placeholderCards, // Will store actual cards later
+      createdAt: Date.now(),
     };
     
     setDecks(prevDecks => [...prevDecks, newDeck]);
