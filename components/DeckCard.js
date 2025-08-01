@@ -1,13 +1,26 @@
-//component used as way to display botht he deck and thecard
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 
 const DeckCard = ({ deck, onPress }) => {
+  const studiedCards = deck.studiedCards || 0;
+  const totalCards = deck.cardCount;
+  const progress = totalCards > 0 ? (studiedCards / totalCards) * 100 : 0;
+  
   return (
     <Pressable style={styles.card} onPress={onPress}>
-      <View style={styles.cardContent}>
+      <View style={styles.cardHeader}>
         <Text style={styles.deckName}>{deck.name}</Text>
-        <Text style={styles.cardCount}>{deck.cardCount} cards</Text>
+        <Text style={styles.cardCount}>{totalCards} cards</Text>
+      </View>
+      
+      {/* Progress Bar */}
+      <View style={styles.progressContainer}>
+        <View style={styles.progressBar}>
+          <View style={[styles.progressFill, { width: `${progress}%` }]} />
+        </View>
+        <Text style={styles.progressText}>
+          {studiedCards}/{totalCards} studied
+        </Text>
       </View>
     </Pressable>
   );
@@ -31,10 +44,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#f0f0f0',
   },
-  cardContent: {
+  cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 12,
   },
   deckName: {
     fontSize: 18,
@@ -44,6 +58,25 @@ const styles = StyleSheet.create({
   },
   cardCount: {
     fontSize: 14,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  progressContainer: {
+    gap: 6,
+  },
+  progressBar: {
+    height: 6,
+    backgroundColor: '#f3f4f6',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#10b981',
+    borderRadius: 3,
+  },
+  progressText: {
+    fontSize: 12,
     color: '#6b7280',
     fontWeight: '500',
   },

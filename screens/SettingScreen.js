@@ -1,5 +1,5 @@
 // screens/SettingsScreen.js
-
+// Porfile page should see nube rof deck created amount of decks studied or something.
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, SafeAreaView } from 'react-native';
 import { supabase } from '../lib/supabase'; // Adjust path as needed
