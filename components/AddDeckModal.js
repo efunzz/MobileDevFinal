@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
-import {Modal, StyleSheet, Text, Pressable, View, TextInput, TouchableWithoutFeedback, Keyboard} from 'react-native';
+import {Modal, StyleSheet, Text, Pressable, View, TextInput, TouchableWithoutFeedback, Keyboard, FlatList} from 'react-native';
 
-const AddDeckModal = ({ visible, hideModal }) => {
+const AddDeckModal = ({ visible, hideModal, onCreateDeck }) => {
     console.log('=== DEBUG INFO ===');
   console.log('visible:', visible);
   console.log('hideModal type:', typeof hideModal);
@@ -14,7 +14,7 @@ const AddDeckModal = ({ visible, hideModal }) => {
   const handleCreateDeck = () => {
     if (!deckName.trim()) return;
     // TODO: Handle deck creation logic here
-    console.log('Creating deck:', deckName, 'with', cardNumber, 'cards');
+    onCreateDeck(deckName.trim(), cardNumber);
     setDeckName('');
     setCardNumber('5');
   };
@@ -91,7 +91,7 @@ const AddDeckModal = ({ visible, hideModal }) => {
                   
                   <Pressable 
                     style={[styles.button, styles.createButton, !deckName.trim() && styles.disabledButton]} 
-                    onPress={handleCreateDeck}
+                    onPress={() => handleCreateDeck()}
                     disabled={!deckName.trim()}
                   >
                     <Text style={styles.createButtonText}>Create Deck</Text>

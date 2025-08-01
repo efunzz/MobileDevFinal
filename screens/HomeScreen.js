@@ -1,46 +1,170 @@
 // screens/HomeScreen.js
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, SafeAreaView,FlatList } from 'react-native';
 import React, {useState} from 'react';
+
+//import component
 import AddDeckModal from '../components/AddDeckModal';
+import DeckCard from '../components/DeckCard';
 
 export default function HomeScreen() {
   const [modalVisible, setModalVisible] = useState(false);
+  const [decks, setDecks] = useState([]);
+
   const handleOpenModal = () => {
     setModalVisible(true);
   };
   const handleCloseModal = () => {
     setModalVisible(false);
   };
+  const handleCreateDeck = (deckName, cardCount) => {
+    const newDeck = {
+      id: Date.now().toString(),
+      name: deckName,
+      cardCount: parseInt(cardCount),
+      cards: [], // Will store actual cards later
+      createdAt: new Date(),
+    };
+    
+    setDecks(prevDecks => [...prevDecks, newDeck]);
+    setModalVisible(false);
+  };
+
+  const handleDeckPress = (deck) => {
+    // TODO: Navigate to deck detail/study screen
+    console.log('Pressed deck:', deck.name);
+  };
+
+
+  if (decks.length === 0) {
+    // Show centered + button when no decks
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyTitle}>Create Your First Deck</Text>
+          <Text style={styles.emptySubtitle}>Tap the + button to get started</Text>
+          <Pressable style={styles.centerButton} onPress={handleOpenModal}>
+            <Text style={styles.buttonText}>+</Text>
+          </Pressable>
+        </View>
+        <AddDeckModal 
+          visible={modalVisible} 
+          hideModal={handleCloseModal}
+          onCreateDeck={handleCreateDeck}
+        />
+      </SafeAreaView>
+    );
+  }
+
+  // Show deck list with floating + button
   return (
-    <View style={styles.container}>
-      <Pressable style={styles.button} 
-        onPress={handleOpenModal}>
-        <Text style={styles.text}> + </Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>My Decks</Text>
+      </View>
+      
+      <FlatList
+        data={decks}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <DeckCard 
+            deck={item} 
+            onPress={() => handleDeckPress(item)}
+          />
+        )}
+        contentContainerStyle={styles.listContainer}
+        showsVerticalScrollIndicator={true}
+      />
+
+      {/* Floating Action Button */}
+      <Pressable style={styles.floatingButton} onPress={handleOpenModal}>
+        <Text style={styles.buttonText}>+</Text>
       </Pressable>
-      <AddDeckModal visible={modalVisible} hideModal={handleCloseModal} />
-    </View>
+
+      <AddDeckModal 
+        visible={modalVisible} 
+        hideModal={handleCloseModal}
+        onCreateDeck={handleCreateDeck}
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f9fafb',
+  },
+  emptyState: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    paddingHorizontal: 32,
   },
-  text: {
+  emptyTitle: {
     fontSize: 24,
-    color: '#fff',
-    fontWeight: 'bold',
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 8,
+    textAlign: 'center',
   },
-  button: {
-    backgroundColor: '#000',
+  emptySubtitle: {
+    fontSize: 16,
+    color: '#6b7280',
+    marginBottom: 32,
+    textAlign: 'center',
+  },
+  centerButton: {
+    backgroundColor: '#111827',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  header: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  listContainer: {
+    paddingBottom: 100, // Space for floating button
+  },
+  floatingButton: {
+    position: 'absolute',
+    bottom: 30,
+    right: 30,
+    backgroundColor: '#111827',
     width: 60,
     height: 60,
     borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  buttonText: {
+    fontSize: 28,
+    color: '#ffffff',
+    fontWeight: '300',
   },
 });
