@@ -1,5 +1,6 @@
 // screens/HomeScreen.js
-import { View, Text, StyleSheet, Pressable, SafeAreaView,FlatList } from 'react-native';
+import { View, Text, StyleSheet, Pressable, SafeAreaView,FlatList, } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import React, {useState} from 'react';
 
 //import component
@@ -7,6 +8,7 @@ import AddDeckModal from '../components/AddDeckModal';
 import DeckCard from '../components/DeckCard';
 
 export default function HomeScreen() {
+  const navigation = useNavigation();
   const [modalVisible, setModalVisible] = useState(false);
   const [decks, setDecks] = useState([]);
 
@@ -30,8 +32,7 @@ export default function HomeScreen() {
   };
 
   const handleDeckPress = (deck) => {
-    // TODO: Navigate to deck detail/study screen
-    console.log('Pressed deck:', deck.name);
+    navigation.navigate('CardList', { deck: deck });
   };
 
 
