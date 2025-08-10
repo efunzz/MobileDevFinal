@@ -2,6 +2,7 @@ import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from '../screens/HomeScreen';
 import CardListScreen from '../screens/CardListScreen';
+import StudyScreen from '../screens/StudyScreen';
 
 const Stack = createStackNavigator();
 
@@ -20,6 +21,14 @@ export default function HomeStackNavigator() {
           headerShown: true,
           title: 'Cards',
           headerBackTitle: 'Back'
+        }}
+      />
+       <Stack.Screen 
+        name="StudyScreen" 
+        component={StudyScreen}
+        options={{ 
+          headerShown: false,
+          presentation: 'card' // Optional: makes it slide up like a modal
         }}
       />
     </Stack.Navigator>

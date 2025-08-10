@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, FlatList, SafeAreaView, Pressable } from 'react
 import CardItem from '../components/CardItem';
 import EditCardModal from '../components/EditCardModal';
 
-export default function CardListScreen({ route }) {
+export default function CardListScreen({ route , navigation }) {
   const { deck } = route.params || {};
   const [cards, setCards] = useState(deck?.cards || []);
   const [editingCard, setEditingCard] = useState(null);
@@ -71,7 +71,10 @@ export default function CardListScreen({ route }) {
       {/* Study Button */}
       {filledCards > 0 && (
         <View style={styles.bottomContainer}>
-          <Pressable style={styles.studyButton}>
+          <Pressable 
+            style={styles.studyButton}
+            onPress={() => navigation.navigate('StudyScreen', { cards })}
+          >
             <Text style={styles.studyButtonText}>Start Studying</Text>
           </Pressable>
         </View>
