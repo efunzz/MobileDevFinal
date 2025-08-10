@@ -1,7 +1,6 @@
-// screens/HomeScreen.js
+import React, {useState} from 'react';
 import { View, Text, StyleSheet, Pressable, SafeAreaView,FlatList, } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import React, {useState} from 'react';
 
 //import component
 import AddDeckModal from '../components/AddDeckModal';

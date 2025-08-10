@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, FlatList, SafeAreaView, Pressable } from 'react-native';
+//import components
 import CardItem from '../components/CardItem';
 import EditCardModal from '../components/EditCardModal';
 

@@ -1,19 +1,18 @@
 import React, {useState} from 'react';
-import {Modal, StyleSheet, Text, Pressable, View, TextInput, TouchableWithoutFeedback, Keyboard, FlatList} from 'react-native';
+import {Modal, StyleSheet, Text, Pressable, View, TextInput, TouchableWithoutFeedback, Keyboard} from 'react-native';
 
 const AddDeckModal = ({ visible, hideModal, onCreateDeck }) => {
-console.log('=== DEBUG INFO ===');
-  console.log('visible:', visible);
-  console.log('hideModal type:', typeof hideModal);
-  console.log('hideModal value:', hideModal);
-  console.log('==================');
+  //console.log('=== DEBUG INFO ===');
+  //console.log('visible:', visible);
+  //console.log('hideModal type:', typeof hideModal);
+  //console.log('hideModal value:', hideModal);
+  //console.log('==================');
 
   const [deckName, setDeckName] = useState('');
   const [cardNumber, setCardNumber] = useState('5');
 
   const handleCreateDeck = () => {
     if (!deckName.trim()) return;
-    // TODO: Handle deck creation logic here
     onCreateDeck(deckName.trim(), cardNumber);
     setDeckName('');
     setCardNumber('5');
