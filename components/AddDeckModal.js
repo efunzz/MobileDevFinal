@@ -1,22 +1,52 @@
 import React, {useState} from 'react';
 import {Modal, StyleSheet, Text, Pressable, View, TextInput, TouchableWithoutFeedback, Keyboard} from 'react-native';
+//imports for supabase and auth context
+import { supabase } from '../lib/supabase'; // ← ADD THIS IMPORT
+// for bettery system architecture import { useAuth } from '../context/AuthContext'; // ← ADD THIS IMPORT
+
 
 const AddDeckModal = ({ visible, hideModal, onCreateDeck }) => {
-  //console.log('=== DEBUG INFO ===');
-  //console.log('visible:', visible);
-  //console.log('hideModal type:', typeof hideModal);
-  //console.log('hideModal value:', hideModal);
-  //console.log('==================');
 
   const [deckName, setDeckName] = useState('');
   const [cardNumber, setCardNumber] = useState('5');
 
-  const handleCreateDeck = () => {
+  const handleCreateDeck = async () => {
     if (!deckName.trim()) return;
-    onCreateDeck(deckName.trim(), cardNumber);
+  
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    console.log("Creating deck for user:", user?.id);
+    
+    if (authError || !user) {
+      console.error('User not authenticated:', authError);
+      return;
+    }
+  
+    const { data, error } = await supabase
+      .from('decks')
+      .insert([{
+        name: deckName.trim(),
+        user_id: user.id,
+        card_count: parseInt(cardNumber),
+        created_at: new Date().toISOString()
+      }])
+      .select()
+      .single();
+  
+    if (error) {
+      console.error('Error creating deck:', error);
+      return;
+    }
+  
+    console.log("Deck saved in Supabase:", data);
+  
+    onCreateDeck(data);
+    
     setDeckName('');
     setCardNumber('5');
+    hideModal();
   };
+  
+
 
   const incrementCard = () => {
     setCardNumber((parseInt(cardNumber) + 1).toString());

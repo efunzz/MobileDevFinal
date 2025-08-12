@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 
 const DeckCard = ({ deck, onPress }) => {
   const studiedCards = deck.studiedCards || 0;
-  const totalCards = deck.cardCount;
+  const totalCards = deck.card_count || 0; 
   const progress = totalCards > 0 ? (studiedCards / totalCards) * 100 : 0;
   
   return (
