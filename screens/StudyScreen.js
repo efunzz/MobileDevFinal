@@ -58,29 +58,18 @@ export default function StudyScreen({ route, navigation }) {
   };
 
   // Handle finishing the study session
-  const handleFinishStudy = () => {
-    const totalCards = studyStats.again + studyStats.hard + studyStats.good + studyStats.easy + 1;
-    
-    Alert.alert(
-      'Study Session Complete!',
-      `You studied ${totalCards} cards.\n\nResults:\nAgain: ${studyStats.again}\nHard: ${studyStats.hard}\nGood: ${studyStats.good}\nEasy: ${studyStats.easy + 1}`,
-      [
-        {
-          text: 'Study Again',
-          onPress: () => {
-            setCurrentCardIndex(0);
-            setShowAnswer(false);
-            setStudyStats({ again: 0, hard: 0, good: 0, easy: 0 });
-          }
-        },
-        {
-          text: 'Done',
-          onPress: () => navigation.goBack(),
-          style: 'cancel'
-        }
-      ]
-    );
+   // Handle finishing the study session
+   const handleFinishStudy = () => {
+    navigation.navigate('StudyStatistics', {
+      studyStats: {
+        ...studyStats,
+        easy: studyStats.easy + 1 // Add current card to easy
+      },
+      deckName: cards[0]?.deckName || 'Study Session',
+      cards: studyCards // Pass cards for "Study Again"
+    });
   };
+
 
   // Handle back button
   const handleGoBack = () => {
