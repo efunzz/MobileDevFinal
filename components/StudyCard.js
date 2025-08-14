@@ -1,11 +1,15 @@
+// components/StudyCard.js - Just add image support
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import  FlipCard from './CardFlip';
+import { View, Text, StyleSheet, Image } from 'react-native';
+import FlipCard from './CardFlip';
 
 export default function StudyCard({ card, showAnswer, style }) {
   const frontContent = (
     <View style={styles.cardContent}>
       <Text style={styles.cardLabel}>Question</Text>
+      {card.frontImage && (
+        <Image source={{ uri: card.frontImage }} style={styles.cardImage} />
+      )}
       <Text style={styles.cardText}>{card.front}</Text>
     </View>
   );
@@ -13,6 +17,9 @@ export default function StudyCard({ card, showAnswer, style }) {
   const backContent = (
     <View style={styles.cardContent}>
       <Text style={styles.cardLabel}>Answer</Text>
+      {card.backImage && (
+        <Image source={{ uri: card.backImage }} style={styles.cardImage} />
+      )}
       <Text style={styles.cardText}>{card.back}</Text>
     </View>
   );
@@ -43,6 +50,13 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginBottom: 16,
     textAlign: 'center',
+  },
+  cardImage: {
+    width: '100%',
+    height: 120,
+    borderRadius: 8,
+    resizeMode: 'cover',
+    marginBottom: 16,
   },
   cardText: {
     fontSize: 20,

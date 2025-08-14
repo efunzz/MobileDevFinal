@@ -13,35 +13,34 @@ export default function CardListScreen({ route, navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Fetch cards from database
   const fetchCards = async () => {
     if (!deck?.id) {
       setLoading(false);
       return;
     }
-
+  
     setLoading(true);
-
+  
     try {
       const { data, error } = await supabase
         .from('cards')
-        .select('*')
+        .select('*, front_image, back_image') // ADD THIS LINE
         .eq('deck_id', deck.id)
         .order('position', { ascending: true });
-
+  
       if (error) {
         Alert.alert('Error', 'Failed to load cards');
         setCards([]);
       } else {
-        // Create empty cards if none exist
         if (data.length === 0) {
           await createEmptyCards();
         } else {
-          // Map database fields to app fields
           const mappedCards = data.map(card => ({
             ...card,
             front: card.question || '',
-            back: card.answer || ''
+            back: card.answer || '',
+            frontImage: card.front_image, 
+            backImage: card.back_image    
           }));
           setCards(mappedCards);
         }
@@ -52,6 +51,7 @@ export default function CardListScreen({ route, navigation }) {
       setLoading(false);
     }
   };
+  
 
   // Create empty cards for new deck
   const createEmptyCards = async () => {
@@ -63,7 +63,7 @@ export default function CardListScreen({ route, navigation }) {
         deck_id: deck.id,
         question: '',
         answer: '',
-        position: i
+        position: i,
       });
     }
 
@@ -95,25 +95,28 @@ export default function CardListScreen({ route, navigation }) {
       const updateData = {
         question: cardData.front || '',
         answer: cardData.back || '',
+        front_image: cardData.frontImage, // ADD THIS LINE
+        back_image: cardData.backImage    // ADD THIS LINE
       };
-
+  
       const { data, error } = await supabase
         .from('cards')
         .update(updateData)
         .eq('id', cardData.id)
         .select()
         .single();
-
+  
       if (error) {
         Alert.alert('Error', 'Failed to save card');
         return false;
       }
-
-      // Return mapped data for app
+  
       return {
         ...data,
         front: data.question || '',
-        back: data.answer || ''
+        back: data.answer || '',
+        frontImage: data.front_image, // ADD THIS LINE
+        backImage: data.back_image    // ADD THIS LINE
       };
     } catch (err) {
       Alert.alert('Error', 'Failed to save card');
