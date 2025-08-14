@@ -1,6 +1,8 @@
 import React, {useState} from 'react';
 import { View, Text, StyleSheet, Pressable, SafeAreaView,FlatList, } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import{ useEffect } from 'react';
+import { supabase } from '../lib/supabase';  // Or wherever your client is
 
 //import component
 import AddDeckModal from '../components/AddDeckModal';
@@ -12,32 +14,49 @@ export default function HomeScreen() {
   const [decks, setDecks] = useState([]);
 
   const handleOpenModal = () => {
+
     setModalVisible(true);
   };
   const handleCloseModal = () => {
     setModalVisible(false);
   };
-  const handleCreateDeck = (deckName, cardCount) => {
-    // Generate placeholder cards
-  const placeholderCards = Array.from({ length: parseInt(cardCount) }, (_, index) => ({
-    id: `${Date.now()}_${index}`,
-    front: '',
-    back: '',
-    isEmpty: true
-  }));
-
-    const newDeck = {
-      id: Date.now().toString(),
-      name: deckName,
-      cardCount: parseInt(cardCount),
-      cards: placeholderCards, // Will store actual cards later
-      createdAt: Date.now(),
-    };
+   // Fetch decks from Supabase
+   const fetchDecks = async () => {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
     
-    setDecks(prevDecks => [...prevDecks, newDeck]);
-    setModalVisible(false);
+    if (userError || !user) {
+      console.error('User not authenticated:', userError);
+      setDecks([]); // Clear decks if no user
+      return;
+    }
+  
+    console.log("Fetching decks for user:", user.id);
+  
+    const { data, error } = await supabase
+      .from('decks')
+      .select('*')
+      .eq('user_id', user.id);
+  
+    if (error) {
+      console.error('Error fetching decks:', error);
+      setDecks([]);
+      return;
+    }
+  
+    console.log("Fetched decks:", data);
+    setDecks(data);
   };
+  useEffect(() => {
+    fetchDecks();
+  }, []); 
+  const handleCreateDeck = async (newDeck) => {
+    console.log('Deck created:', newDeck);
 
+    // Option 1: push directly into state for instant update
+    setDecks((prev) => [...prev, newDeck]);
+
+    handleCloseModal();
+};
   const handleDeckPress = (deck) => {
     navigation.navigate('CardList', { deck: deck });
   };
