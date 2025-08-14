@@ -1,8 +1,7 @@
-import React, {useState} from 'react';
-import { View, Text, StyleSheet, Pressable, SafeAreaView,FlatList, } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import{ useEffect } from 'react';
-import { supabase } from '../lib/supabase';  // Or wherever your client is
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Pressable, SafeAreaView, FlatList } from 'react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { supabase } from '../lib/supabase';
 
 //import component
 import AddDeckModal from '../components/AddDeckModal';
@@ -12,69 +11,150 @@ export default function HomeScreen() {
   const navigation = useNavigation();
   const [modalVisible, setModalVisible] = useState(false);
   const [decks, setDecks] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  // Modal Functions
   const handleOpenModal = () => {
-
     setModalVisible(true);
   };
+
   const handleCloseModal = () => {
     setModalVisible(false);
   };
-   // Fetch decks from Supabase
-   const fetchDecks = async () => {
+
+  // Fetch decks and cards from database
+  const fetchDecks = async () => {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
       console.error('User not authenticated:', userError);
-      setDecks([]); // Clear decks if no user
-      return;
-    }
-  
-    console.log("Fetching decks for user:", user.id);
-  
-    const { data, error } = await supabase
-      .from('decks')
-      .select('*')
-      .eq('user_id', user.id);
-  
-    if (error) {
-      console.error('Error fetching decks:', error);
       setDecks([]);
+      setLoading(false);
       return;
     }
   
-    console.log("Fetched decks:", data);
-    setDecks(data);
+    try {
+      // Get decks with their cards and confidence levels
+      const { data, error } = await supabase
+        .from('decks')
+        .select(`
+          *,
+          cards (
+            id,
+            question,
+            answer,
+            confidence_level,
+            last_studied
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+  
+      if (error) {
+        console.error('Error fetching decks:', error);
+        setDecks([]);
+      } else {
+        // Calculate study statistics for each deck
+        const decksWithStats = data.map(deck => {
+          const cards = deck.cards || [];
+          const totalCards = cards.length;
+          
+          // Count cards with content
+          const filledCards = cards.filter(card => 
+            card.question?.trim() || card.answer?.trim()
+          ).length;
+          
+          // Count cards user is confident with (good or easy)
+          const studiedCards = cards.filter(card => 
+            card.confidence_level === 'good' || card.confidence_level === 'easy'
+          ).length;
+          
+          // Count cards that need review (again or hard)
+          const needReviewCards = cards.filter(card => 
+            card.confidence_level === 'again' || card.confidence_level === 'hard'
+          ).length;
+          
+          return {
+            ...deck,
+            totalCards,
+            filledCards,
+            studiedCards,        
+            needReviewCards,     
+            studyProgress: totalCards > 0 ? (studiedCards / totalCards) * 100 : 0
+          };
+        });
+        
+        setDecks(decksWithStats);
+      }
+    } catch (err) {
+      console.error('Unexpected error fetching decks:', err);
+      setDecks([]);
+    } finally {
+      setLoading(false);
+    }
   };
-  useEffect(() => {
-    fetchDecks();
-  }, []); 
+
+  // Refresh data when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchDecks();
+    }, [])
+  );
+
+  // Handle creating new deck
   const handleCreateDeck = async (newDeck) => {
     console.log('Deck created:', newDeck);
-
-    // Option 1: push directly into state for instant update
-    setDecks((prev) => [...prev, newDeck]);
-
-    handleCloseModal();
-};
-  const handleDeckPress = (deck) => {
-    navigation.navigate('CardList', { deck: deck });
+    // Refresh deck list to show new deck
+    await fetchDecks();
   };
 
+  // Navigate to card list screen
+  const handleDeckPress = (deck) => {
+    navigation.navigate('CardList', { deck });
+  };
 
-  if (decks.length === 0) {
-    // Show centered + button when no decks
+  // Render individual deck card
+  const renderDeckItem = ({ item }) => (
+    <DeckCard 
+      deck={item} 
+      onPress={() => handleDeckPress(item)}
+    />
+  );
+
+  // Show loading screen
+  if (loading) {
     return (
       <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>My Flashcards</Text>
+        </View>
         <View style={styles.emptyState}>
-          <Text style={styles.emptyTitle}>Create Your First Deck</Text>
-          <Text style={styles.emptySubtitle}>Tap the + button to get started</Text>
+          <Text style={styles.emptyTitle}>Loading your decks...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Show empty state when no decks
+  if (decks.length === 0) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>My Flashcards</Text>
+        </View>
+        
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyTitle}>Welcome to Flashcards!</Text>
+          <Text style={styles.emptySubtitle}>
+            Create your first deck to start learning
+          </Text>
           <Pressable style={styles.centerButton} onPress={handleOpenModal}>
             <Text style={styles.buttonText}>+</Text>
           </Pressable>
         </View>
-        <AddDeckModal 
-          visible={modalVisible} 
+
+        <AddDeckModal
+          visible={modalVisible}
           hideModal={handleCloseModal}
           onCreateDeck={handleCreateDeck}
         />
@@ -82,33 +162,34 @@ export default function HomeScreen() {
     );
   }
 
-  // Show deck list with floating + button
+  // Main screen with deck list
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Decks</Text>
+        <Text style={styles.headerTitle}>My Flashcards</Text>
+        <Text style={styles.headerSubtitle}>
+          {decks.length} deck{decks.length !== 1 ? 's' : ''}
+        </Text>
       </View>
-      
+
+      {/* Decks List */}
       <FlatList
         data={decks}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <DeckCard 
-            deck={item} 
-            onPress={() => handleDeckPress(item)}
-          />
-        )}
+        renderItem={renderDeckItem}
         contentContainerStyle={styles.listContainer}
-        showsVerticalScrollIndicator={true}
+        showsVerticalScrollIndicator={false}
       />
 
-      {/* Floating Action Button */}
+      {/* Add Button */}
       <Pressable style={styles.floatingButton} onPress={handleOpenModal}>
         <Text style={styles.buttonText}>+</Text>
       </Pressable>
 
-      <AddDeckModal 
-        visible={modalVisible} 
+      {/* Create Deck Modal */}
+      <AddDeckModal
+        visible={modalVisible}
         hideModal={handleCloseModal}
         onCreateDeck={handleCreateDeck}
       />
@@ -167,8 +248,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#111827',
   },
+  headerSubtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginTop: 4,
+  },
   listContainer: {
-    paddingBottom: 100, // Space for floating button
+    paddingBottom: 100,
   },
   floatingButton: {
     position: 'absolute',

@@ -7,14 +7,14 @@ import {
   SafeAreaView,
   Alert
 } from 'react-native';
-import StudyCard from '../components/StudyCard'
-
+import StudyCard from '../components/StudyCard';
+import { supabase } from '../lib/supabase';
 
 export default function StudyScreen({ route, navigation }) {
-  const { cards } = route.params || {};
+  const { cards, deckName } = route.params || {};
   
   // Filter out empty cards for studying
-  const studyCards = cards.filter(card => !card.isEmpty && (card.front || card.back));
+  const studyCards = cards.filter(card => card.front?.trim() || card.back?.trim());
   
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
@@ -25,25 +25,44 @@ export default function StudyScreen({ route, navigation }) {
     easy: 0
   });
 
-  
   const currentCard = studyCards[currentCardIndex];
   const isLastCard = currentCardIndex === studyCards.length - 1;
   const progress = ((currentCardIndex + 1) / studyCards.length) * 100;
 
-  // Handle revealing the answer
+  // Show answer when user taps reveal button
   const handleRevealAnswer = () => {
     setShowAnswer(true);
   };
 
-  // Handle confidence rating
-  const handleConfidenceRating = (rating) => {
-    // Update stats
+  // Save user confidence rating to database
+  const saveConfidenceRating = async (cardId, confidenceLevel) => {
+    try {
+      const { error } = await supabase
+        .from('cards')
+        .update({
+          confidence_level: confidenceLevel,
+          last_studied: new Date().toISOString(),
+          study_count: 1
+        })
+        .eq('id', cardId);
+  
+      if (error) {
+        console.error('Error saving confidence rating:', error);
+      }
+    } catch (err) {
+      console.error('Unexpected error saving confidence:', err);
+    }
+  };
+
+  // Process confidence rating and move to next card
+  const handleConfidenceRating = async (rating) => {
+    await saveConfidenceRating(currentCard.id, rating);
+    
     setStudyStats(prev => ({
       ...prev,
       [rating]: prev[rating] + 1
     }));
 
-    // Move to next card or finish
     if (isLastCard) {
       handleFinishStudy();
     } else {
@@ -51,27 +70,25 @@ export default function StudyScreen({ route, navigation }) {
     }
   };
 
-  // Move to next card
+  // Advance to next card and reset answer visibility
   const moveToNextCard = () => {
     setCurrentCardIndex(prev => prev + 1);
     setShowAnswer(false);
   };
 
-  // Handle finishing the study session
-   // Handle finishing the study session
-   const handleFinishStudy = () => {
+  // Complete study session and navigate to statistics
+  const handleFinishStudy = () => {
     navigation.navigate('StudyStatistics', {
       studyStats: {
         ...studyStats,
-        easy: studyStats.easy + 1 // Add current card to easy
+        easy: studyStats.easy + 1
       },
-      deckName: cards[0]?.deckName || 'Study Session',
-      cards: studyCards // Pass cards for "Study Again"
+      deckName: deckName || 'Study Session',
+      cards: studyCards
     });
   };
 
-
-  // Handle back button
+  // Confirm before ending study session
   const handleGoBack = () => {
     Alert.alert(
       'End Study Session?',
@@ -98,7 +115,6 @@ export default function StudyScreen({ route, navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Pressable onPress={handleGoBack} style={styles.closeButton}>
           <Text style={styles.closeButtonText}>✕</Text>
@@ -111,7 +127,6 @@ export default function StudyScreen({ route, navigation }) {
         </View>
       </View>
 
-      {/* Card Content */}
       <View style={styles.cardContainer}>
         <StudyCard
           card={currentCard}
@@ -119,7 +134,6 @@ export default function StudyScreen({ route, navigation }) {
         />
       </View>
 
-      {/* Bottom Actions */}
       <View style={styles.bottomContainer}>
         {!showAnswer ? (
           <Pressable style={styles.revealButton} onPress={handleRevealAnswer}>

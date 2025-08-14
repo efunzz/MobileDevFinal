@@ -13,18 +13,14 @@ export default function CardListScreen({ route, navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // =============================================
-  // FETCH CARDS FROM SUPABASE
-  // =============================================
+  // Fetch cards from database
   const fetchCards = async () => {
     if (!deck?.id) {
-      console.error('No deck ID provided');
       setLoading(false);
       return;
     }
 
     setLoading(true);
-    console.log('Fetching cards for deck:', deck.id);
 
     try {
       const { data, error } = await supabase
@@ -34,17 +30,14 @@ export default function CardListScreen({ route, navigation }) {
         .order('position', { ascending: true });
 
       if (error) {
-        console.error('Error fetching cards:', error);
         Alert.alert('Error', 'Failed to load cards');
         setCards([]);
       } else {
-        console.log('Fetched cards:', data);
-        
-        // If no cards exist, create empty ones based on deck.card_count
+        // Create empty cards if none exist
         if (data.length === 0) {
           await createEmptyCards();
         } else {
-          // Map your database fields to the app's expected fields
+          // Map database fields to app fields
           const mappedCards = data.map(card => ({
             ...card,
             front: card.question || '',
@@ -54,16 +47,13 @@ export default function CardListScreen({ route, navigation }) {
         }
       }
     } catch (err) {
-      console.error('Unexpected error fetching cards:', err);
       Alert.alert('Error', 'Failed to load cards');
     } finally {
       setLoading(false);
     }
   };
 
-  // =============================================
-  // CREATE EMPTY CARDS WHEN DECK IS FIRST ACCESSED
-  // =============================================
+  // Create empty cards for new deck
   const createEmptyCards = async () => {
     const cardCount = deck.card_count || 5;
     const emptyCards = [];
@@ -71,8 +61,8 @@ export default function CardListScreen({ route, navigation }) {
     for (let i = 0; i < cardCount; i++) {
       emptyCards.push({
         deck_id: deck.id,
-        question: '', // Your DB uses 'question' instead of 'front'
-        answer: '',   // Your DB uses 'answer' instead of 'back'
+        question: '',
+        answer: '',
         position: i
       });
     }
@@ -84,11 +74,9 @@ export default function CardListScreen({ route, navigation }) {
         .select();
 
       if (error) {
-        console.error('Error creating empty cards:', error);
         Alert.alert('Error', 'Failed to create cards');
       } else {
-        console.log('Created empty cards:', data);
-        // Map the response to match app expectations
+        // Map response to app format
         const mappedCards = data.map(card => ({
           ...card,
           front: card.question || '',
@@ -97,18 +85,16 @@ export default function CardListScreen({ route, navigation }) {
         setCards(mappedCards);
       }
     } catch (err) {
-      console.error('Unexpected error creating cards:', err);
+      console.error('Error creating cards:', err);
     }
   };
 
-  // =============================================
-  // SAVE CARD TO SUPABASE
-  // =============================================
+  // Save card changes to database
   const saveCardToSupabase = async (cardData) => {
     try {
       const updateData = {
-        question: cardData.front || '', // Map 'front' to 'question'
-        answer: cardData.back || '',    // Map 'back' to 'answer'
+        question: cardData.front || '',
+        answer: cardData.back || '',
       };
 
       const { data, error } = await supabase
@@ -119,47 +105,39 @@ export default function CardListScreen({ route, navigation }) {
         .single();
 
       if (error) {
-        console.error('Error saving card:', error);
         Alert.alert('Error', 'Failed to save card');
         return false;
       }
 
-      console.log('Card saved successfully:', data);
-      // Return mapped data for the app
+      // Return mapped data for app
       return {
         ...data,
         front: data.question || '',
         back: data.answer || ''
       };
     } catch (err) {
-      console.error('Unexpected error saving card:', err);
       Alert.alert('Error', 'Failed to save card');
       return false;
     }
   };
 
-  // =============================================
-  // COMPONENT LIFECYCLE
-  // =============================================
+  // Load cards when component mounts
   useEffect(() => {
     fetchCards();
   }, [deck?.id]);
 
-  // =============================================
-  // EVENT HANDLERS
-  // =============================================
+  // Handle card press to edit
   const handleCardPress = (card, index) => {
     setEditingCard({ ...card, index });
     setModalVisible(true);
   };
 
+  // Handle saving edited card
   const handleSaveCard = async (updatedCard) => {
-    console.log('Saving card:', updatedCard);
-    
     const savedCard = await saveCardToSupabase(updatedCard);
     
     if (savedCard) {
-      // Update local state
+      // Update card in local state
       const newCards = [...cards];
       const cardIndex = newCards.findIndex(c => c.id === savedCard.id);
       if (cardIndex !== -1) {
@@ -172,20 +150,17 @@ export default function CardListScreen({ route, navigation }) {
     setEditingCard(null);
   };
 
+  // Close modal without saving
   const handleCloseModal = () => {
     setModalVisible(false);
     setEditingCard(null);
   };
 
-  // =============================================
-  // COMPUTED VALUES
-  // =============================================
+  // Calculate card statistics
   const filledCards = cards.filter(card => card.front?.trim() || card.back?.trim()).length;
   const totalCards = cards.length;
 
-  // =============================================
-  // RENDER LOADING STATE
-  // =============================================
+  // Show loading screen
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -196,12 +171,9 @@ export default function CardListScreen({ route, navigation }) {
     );
   }
 
-  // =============================================
-  // RENDER MAIN CONTENT
-  // =============================================
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header Stats */}
+      {/* Header with deck stats */}
       <View style={styles.header}>
         <Text style={styles.deckName}>{deck?.name || 'Unknown Deck'}</Text>
         <View style={styles.statsContainer}>

@@ -2,9 +2,19 @@ import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 
 const DeckCard = ({ deck, onPress }) => {
-  const studiedCards = deck.studiedCards || 0;
-  const totalCards = deck.card_count || 0; 
+  const totalCards = deck.totalCards || 0;
+  const studiedCards = deck.studiedCards || 0;  // Cards with 'good' or 'easy' confidence
+  
+  // Progress based on confident cards (good + easy)
   const progress = totalCards > 0 ? (studiedCards / totalCards) * 100 : 0;
+  
+  // Determine progress color
+  const getProgressColor = () => {
+    if (progress >= 80) return '#10b981';  // Green - excellent
+    if (progress >= 60) return '#3b82f6';  // Blue - good
+    if (progress >= 40) return '#f59e0b';  // Yellow - okay
+    return '#ef4444';  // Red - needs work
+  };
   
   return (
     <Pressable style={styles.card} onPress={onPress}>
@@ -13,13 +23,19 @@ const DeckCard = ({ deck, onPress }) => {
         <Text style={styles.cardCount}>{totalCards} cards</Text>
       </View>
       
-      {/* Progress Bar */}
+      {/* Progress Bar - Clean and simple */}
       <View style={styles.progressContainer}>
         <View style={styles.progressBar}>
-          <View style={[styles.progressFill, { width: `${progress}%` }]} />
+          <View style={[
+            styles.progressFill, 
+            {
+              width: `${progress}%`,
+              backgroundColor: getProgressColor()
+            }
+          ]} />
         </View>
         <Text style={styles.progressText}>
-          {studiedCards}/{totalCards} studied
+          {studiedCards}/{totalCards} confident
         </Text>
       </View>
     </Pressable>
@@ -72,7 +88,6 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#10b981',
     borderRadius: 3,
   },
   progressText: {
