@@ -1,0 +1,97 @@
+import { OPENAI_API_KEY } from '@env';
+
+
+const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
+
+export const generateFlashcards = async (topic, cardCount = 10) => {
+  try {
+    console.log(`🤖 Generating ${cardCount} flashcards about: ${topic}`);
+    
+    // Create the prompt for OpenAI
+    const prompt = `Create exactly ${cardCount} flashcards about "${topic}". 
+    
+    Return ONLY a valid JSON array in this exact format:
+    [
+      {"front": "Question 1", "back": "Answer 1"},
+      {"front": "Question 2", "back": "Answer 2"}
+    ]
+    
+    Make the questions educational and the answers clear and concise.`;
+
+    // Call OpenAI API using fetch
+    const response = await fetch(OPENAI_API_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 1500,
+        temperature: 0.7
+      })
+    });
+
+    // Check if request was successful
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`API Error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+    }
+
+    // Parse the response
+    const data = await response.json();
+    const aiContent = data.choices[0].message.content;
+    console.log('🤖 AI Response:', aiContent);
+
+    // Parse JSON response
+    const flashcards = JSON.parse(aiContent);
+    
+    // Validate response
+    if (!Array.isArray(flashcards) || flashcards.length === 0) {
+      throw new Error('Invalid flashcards format from AI');
+    }
+
+    console.log(`✅ Successfully generated ${flashcards.length} flashcards`);
+    return {
+      success: true,
+      flashcards: flashcards
+    };
+
+  } catch (error) {
+    console.error('❌ Error generating flashcards:', error);
+    
+    if (error.message.includes('401')) {
+      return {
+        success: false,
+        error: 'Invalid API key. Please check your OpenAI API key.'
+      };
+    } else if (error.message.includes('429')) {
+      return {
+        success: false,
+        error: 'Rate limit exceeded. Please try again in a moment.'
+      };
+    } else {
+      return {
+        success: false,
+        error: 'Failed to generate flashcards. Please try again.'
+      };
+    }
+  }
+};
+
+// Test function to verify API connection
+export const testOpenAIConnection = async () => {
+  try {
+    const result = await generateFlashcards('basic math', 2);
+    return result.success;
+  } catch (error) {
+    console.error('Connection test failed:', error);
+    return false;
+  }
+};

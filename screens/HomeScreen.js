@@ -1,18 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, SafeAreaView, FlatList } from 'react-native';
+import { View, Text, StyleSheet, Pressable, SafeAreaView, FlatList, Alert } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { supabase } from '../lib/supabase';
+import { Ionicons } from '@expo/vector-icons';
+
 
 //import component
 import AddDeckModal from '../components/AddDeckModal';
 import DeckCard from '../components/DeckCard';
+import AiCreateModal from '../components/AiCreateModal';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
   const [modalVisible, setModalVisible] = useState(false);
   const [decks, setDecks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [aiModalVisible, setAiModalVisible] = useState(false);
 
+  
   // Modal Functions
   const handleOpenModal = () => {
     setModalVisible(true);
@@ -20,6 +25,13 @@ export default function HomeScreen() {
 
   const handleCloseModal = () => {
     setModalVisible(false);
+  };
+  const handleOpenAIModal = () => {
+    setAiModalVisible(true);
+  };
+  
+  const handleCloseAIModal = () => {
+    setAiModalVisible(false);
   };
 
   // Fetch decks and cards from database
@@ -181,6 +193,24 @@ export default function HomeScreen() {
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
       />
+      <View style={styles.floatingButtonContainer}>
+  {/* Regular Create Deck Button */}
+  <Pressable style={[styles.floatingButton, styles.regularButton]} onPress={handleOpenModal}>
+    <Ionicons name="add" size={24} color="white" />
+  </Pressable>
+  
+  {/* AI Generate Button */}
+  <Pressable style={[styles.floatingButton, styles.aiButton]} onPress={handleOpenAIModal}>
+    <Ionicons name="sparkles" size={20} color="white" />
+    <Text style={styles.aiButtonText}>AI</Text>
+  </Pressable>
+  
+    <AiCreateModal
+      visible={aiModalVisible}
+      onClose={handleCloseAIModal}
+      onDeckCreated={fetchDecks} // Refresh deck list after AI generation
+    />
+</View>
 
       {/* Add Button */}
       <Pressable style={styles.floatingButton} onPress={handleOpenModal}>
@@ -279,5 +309,32 @@ const styles = StyleSheet.create({
     fontSize: 28,
     color: '#ffffff',
     fontWeight: '300',
+  },
+  floatingButtonContainer: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    flexDirection: 'column',
+    gap: 12,
+  },
+  regularButton: {
+    backgroundColor: '#111827',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+  },
+  aiButton: {
+    backgroundColor: '#7c3aed', // Purple for AI
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 25,
+    gap: 6,
+  },
+  aiButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
