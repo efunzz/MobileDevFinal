@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   Alert
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import StudyCard from '../components/StudyCard';
 import { supabase } from '../lib/supabase';
 
@@ -30,10 +31,10 @@ export default function StudyScreen({ route, navigation }) {
   const progress = ((currentCardIndex + 1) / studyCards.length) * 100;
 
   // Show answer when user taps reveal button
-  const handleRevealAnswer = () => {
+  const handleRevealAnswer = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setShowAnswer(true);
   };
-
   // Save user confidence rating to database
   const saveConfidenceRating = async (cardId, confidenceLevel) => {
     try {
@@ -56,13 +57,35 @@ export default function StudyScreen({ route, navigation }) {
 
   // Process confidence rating and move to next card
   const handleConfidenceRating = async (rating) => {
+    try {
+      // Add haptic feedback based on confidence rating
+      switch (rating) {
+        case 'again':
+          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+          break;
+        case 'hard':
+          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          break;
+        case 'good':
+          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          break;
+        case 'easy':
+          await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          break;
+      }
+    } catch (error) {
+      // Haptics might not be available on all devices
+      console.error('Haptic feedback error:', error);
+    }
+  
+    // Keep existing code unchanged
     await saveConfidenceRating(currentCard.id, rating);
     
     setStudyStats(prev => ({
       ...prev,
       [rating]: prev[rating] + 1
     }));
-
+  
     if (isLastCard) {
       handleFinishStudy();
     } else {
@@ -77,7 +100,10 @@ export default function StudyScreen({ route, navigation }) {
   };
 
   // Complete study session and navigate to statistics
-  const handleFinishStudy = () => {
+  const handleFinishStudy = async () => {
+    // Add success haptic when completing study session
+    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    
     navigation.navigate('StudyStatistics', {
       studyStats: {
         ...studyStats,
@@ -95,7 +121,14 @@ export default function StudyScreen({ route, navigation }) {
       'Your progress will be lost.',
       [
         { text: 'Continue Studying', style: 'cancel' },
-        { text: 'End Session', onPress: () => navigation.goBack() }
+        { 
+          text: 'End Session', 
+          onPress: async () => {
+            // Add light haptic when ending session
+            await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            navigation.goBack();
+          }
+        }
       ]
     );
   };
