@@ -119,6 +119,40 @@ export default function HomeScreen() {
     // Refresh deck list to show new deck
     await fetchDecks();
   };
+  const handleDeleteDeck = async (deckId) => {
+    try {
+      // Delete all cards in the deck first
+      const { error: cardsError } = await supabase
+        .from('cards')
+        .delete()
+        .eq('deck_id', deckId);
+  
+      if (cardsError) {
+        console.error('Error deleting cards:', cardsError);
+        throw cardsError;
+      }
+  
+      // Then delete the deck
+      const { error: deckError } = await supabase
+        .from('decks')
+        .delete()
+        .eq('id', deckId);
+  
+      if (deckError) {
+        console.error('Error deleting deck:', deckError);
+        throw deckError;
+      }
+  
+      // Remove from local state for immediate UI update
+      setDecks(prev => prev.filter(deck => deck.id !== deckId));
+  
+      console.log('Deck deleted successfully');
+    } catch (error) {
+      console.error('Error deleting deck:', error);
+      Alert.alert('Error', 'Failed to delete deck. Please try again.');
+    }
+  };
+  
 
   // Navigate to card list screen
   const handleDeckPress = (deck) => {
@@ -130,6 +164,7 @@ export default function HomeScreen() {
     <DeckCard 
       deck={item} 
       onPress={() => handleDeckPress(item)}
+      onDelete={handleDeleteDeck}  // Add this line
     />
   );
 
