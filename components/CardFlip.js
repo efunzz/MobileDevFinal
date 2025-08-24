@@ -8,9 +8,9 @@ export default function FlipCard({
   style,
   frontStyle,
   backStyle,
-  duration = 300 
+  duration = 150
 }) {
-  const flipAnimation = useRef(new Animated.Value(0)).current;
+ const flipAnimation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.timing(flipAnimation, {
@@ -30,12 +30,27 @@ export default function FlipCard({
     outputRange: ['180deg', '360deg'],
   });
 
+  // Add opacity interpolation to hide sides at the right time
+  const frontOpacity = flipAnimation.interpolate({
+    inputRange: [0, 0.49, 0.51, 1],  // Very narrow transition window
+    outputRange: [1, 1, 0, 0],
+    extrapolate: 'clamp',
+  });
+
+  const backOpacity = flipAnimation.interpolate({
+    inputRange: [0, 0.49, 0.51, 1],  // Very narrow transition window  
+    outputRange: [0, 0, 1, 1],
+    extrapolate: 'clamp',
+ });
+
   const frontAnimatedStyle = {
-    transform: [{ rotateY: frontInterpolate }]
+    transform: [{ rotateY: frontInterpolate }],
+    opacity: frontOpacity,
   };
 
   const backAnimatedStyle = {
-    transform: [{ rotateY: backInterpolate }]
+    transform: [{ rotateY: backInterpolate }],
+    opacity: backOpacity,
   };
 
   return (

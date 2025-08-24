@@ -5,8 +5,6 @@ const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 
 export const generateFlashcards = async (topic, cardCount = 10) => {
   try {
-    console.log(`🤖 Generating ${cardCount} flashcards about: ${topic}`);
-    
     // Create the prompt for OpenAI
     const prompt = `Create exactly ${cardCount} flashcards about "${topic}". 
     

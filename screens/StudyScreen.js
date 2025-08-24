@@ -174,14 +174,13 @@ export default function StudyScreen({ route, navigation }) {
           </Pressable>
         ) : (
           <View style={styles.confidenceContainer}>
-            <Text style={styles.confidenceTitle}>How well did you know this?</Text>
+            <Text style={styles.confidenceTitle}>How did you find the question?</Text>
             <View style={styles.confidenceButtons}>
               <Pressable 
                 style={[styles.confidenceButton, styles.againButton]} 
                 onPress={() => handleConfidenceRating('again')}
               >
                 <Text style={styles.confidenceButtonText}>Again</Text>
-                <Text style={styles.confidenceSubText}>{'<1m'}</Text>
               </Pressable>
               
               <Pressable 
@@ -189,7 +188,6 @@ export default function StudyScreen({ route, navigation }) {
                 onPress={() => handleConfidenceRating('hard')}
               >
                 <Text style={styles.confidenceButtonText}>Hard</Text>
-                <Text style={styles.confidenceSubText}>{'<6m'}</Text>
               </Pressable>
               
               <Pressable 
@@ -197,7 +195,6 @@ export default function StudyScreen({ route, navigation }) {
                 onPress={() => handleConfidenceRating('good')}
               >
                 <Text style={styles.confidenceButtonText}>Good</Text>
-                <Text style={styles.confidenceSubText}>{'<10m'}</Text>
               </Pressable>
               
               <Pressable 
@@ -205,7 +202,6 @@ export default function StudyScreen({ route, navigation }) {
                 onPress={() => handleConfidenceRating('easy')}
               >
                 <Text style={styles.confidenceButtonText}>Easy</Text>
-                <Text style={styles.confidenceSubText}>4d</Text>
               </Pressable>
             </View>
           </View>
@@ -335,11 +331,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#111827',
-  },
-  confidenceSubText: {
-    fontSize: 10,
-    color: '#6b7280',
-    marginTop: 2,
   },
   emptyContainer: {
     flex: 1,

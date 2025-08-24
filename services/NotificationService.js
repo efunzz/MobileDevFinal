@@ -2,7 +2,6 @@ import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Configure notifications (from lecturer's demo)
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowBanner: true,
@@ -25,7 +24,7 @@ class NotificationService {
     return this.expoPushToken;
   }
 
-  // Register for push notifications (exactly from lecturer's demo)
+  // Register for push notifications 
   async registerForPushNotifications() {
     let token;
 
@@ -54,7 +53,7 @@ class NotificationService {
     return token;
   }
 
-  // Setup notification listeners (from lecturer's demo)
+  // Setup notification listeners
   setupListeners() {
     this.notificationListener = Notifications.addNotificationReceivedListener(notification => {
       console.log('Notification received:', notification);
@@ -80,7 +79,7 @@ class NotificationService {
     }
   }
 
-  // Test notification (from lecturer's demo)
+  // Test notification 
   async sendTestNotification() {
     await Notifications.scheduleNotificationAsync({
       content: {
@@ -88,7 +87,7 @@ class NotificationService {
         body: "Your notifications are working perfectly!",
         data: { data: 'test notification' },
       },
-      trigger: { seconds: 1 },
+      trigger: { seconds: 30 },
     });
   }
 
