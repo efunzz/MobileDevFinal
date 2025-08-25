@@ -3,9 +3,14 @@ import { View, Text, StyleSheet, Pressable, SafeAreaView, FlatList, Alert } from
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { supabase } from '../lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  interpolate,
+} from 'react-native-reanimated';
 
-
-//import component
 import AddDeckModal from '../components/AddDeckModal';
 import DeckCard from '../components/DeckCard';
 import AiCreateModal from '../components/AiCreateModal';
@@ -16,25 +21,86 @@ export default function HomeScreen() {
   const [decks, setDecks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [aiModalVisible, setAiModalVisible] = useState(false);
-
   
-  // Modal Functions
+  // FAB animation values
+  const fabExpanded = useSharedValue(0);
+  const [isFabOpen, setIsFabOpen] = useState(false);
+
+  // Modal handlers
   const handleOpenModal = () => {
     setModalVisible(true);
+    toggleFAB();
   };
 
   const handleCloseModal = () => {
     setModalVisible(false);
   };
+
   const handleOpenAIModal = () => {
     setAiModalVisible(true);
+    toggleFAB();
   };
   
   const handleCloseAIModal = () => {
     setAiModalVisible(false);
   };
 
-  // Fetch decks and cards from database
+  // FAB toggle function
+  const toggleFAB = () => {
+    const newState = !isFabOpen;
+    setIsFabOpen(newState);
+    fabExpanded.value = withSpring(newState ? 1 : 0, {
+      damping: 15,
+      stiffness: 150,
+    });
+  };
+
+  // Backdrop animation
+  const backdropStyle = useAnimatedStyle(() => {
+    return {
+      opacity: withTiming(fabExpanded.value * 0.5, { duration: 200 }),
+      pointerEvents: fabExpanded.value > 0 ? 'auto' : 'none',
+    };
+  });
+
+  // Main FAB rotation animation
+  const mainFabStyle = useAnimatedStyle(() => {
+    const rotation = interpolate(fabExpanded.value, [0, 1], [0, 45]);
+    return {
+      transform: [{ rotate: `${rotation}deg` }],
+    };
+  });
+
+  // Sub-button animations
+  const createSubButtonStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(fabExpanded.value, [0, 1], [0, -80]);
+    const opacity = interpolate(fabExpanded.value, [0, 0.5, 1], [0, 0, 1]);
+    const scale = interpolate(fabExpanded.value, [0, 1], [0.3, 1]);
+    
+    return {
+      transform: [
+        { translateY },
+        { scale },
+      ],
+      opacity,
+    };
+  });
+
+  const aiSubButtonStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(fabExpanded.value, [0, 1], [0, -140]);
+    const opacity = interpolate(fabExpanded.value, [0, 0.5, 1], [0, 0, 1]);
+    const scale = interpolate(fabExpanded.value, [0, 1], [0.3, 1]);
+    
+    return {
+      transform: [
+        { translateY },
+        { scale },
+      ],
+      opacity,
+    };
+  });
+
+  // Fetch decks from database
   const fetchDecks = async () => {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
@@ -46,7 +112,6 @@ export default function HomeScreen() {
     }
   
     try {
-      // Get decks with their cards and confidence levels
       const { data, error } = await supabase
         .from('decks')
         .select(`
@@ -66,22 +131,18 @@ export default function HomeScreen() {
         console.error('Error fetching decks:', error);
         setDecks([]);
       } else {
-        // Calculate study statistics for each deck
         const decksWithStats = data.map(deck => {
           const cards = deck.cards || [];
           const totalCards = cards.length;
           
-          // Count cards with content
           const filledCards = cards.filter(card => 
             card.question?.trim() || card.answer?.trim()
           ).length;
           
-          // Count cards user is confident with (good or easy)
           const studiedCards = cards.filter(card => 
             card.confidence_level === 'good' || card.confidence_level === 'easy'
           ).length;
           
-          // Count cards that need review (again or hard)
           const needReviewCards = cards.filter(card => 
             card.confidence_level === 'again' || card.confidence_level === 'hard'
           ).length;
@@ -115,13 +176,12 @@ export default function HomeScreen() {
 
   // Handle creating new deck
   const handleCreateDeck = async (newDeck) => {
-    console.log('Deck created:', newDeck);
-    // Refresh deck list to show new deck
     await fetchDecks();
   };
+
+  // Handle deleting deck
   const handleDeleteDeck = async (deckId) => {
     try {
-      // Delete all cards in the deck first
       const { error: cardsError } = await supabase
         .from('cards')
         .delete()
@@ -132,7 +192,6 @@ export default function HomeScreen() {
         throw cardsError;
       }
   
-      // Then delete the deck
       const { error: deckError } = await supabase
         .from('decks')
         .delete()
@@ -143,16 +202,12 @@ export default function HomeScreen() {
         throw deckError;
       }
   
-      // Remove from local state for immediate UI update
       setDecks(prev => prev.filter(deck => deck.id !== deckId));
-  
-      console.log('Deck deleted successfully');
     } catch (error) {
       console.error('Error deleting deck:', error);
       Alert.alert('Error', 'Failed to delete deck. Please try again.');
     }
   };
-  
 
   // Navigate to card list screen
   const handleDeckPress = (deck) => {
@@ -164,11 +219,11 @@ export default function HomeScreen() {
     <DeckCard 
       deck={item} 
       onPress={() => handleDeckPress(item)}
-      onDelete={handleDeleteDeck}  // Add this line
+      onDelete={handleDeleteDeck}
     />
   );
 
-  // Show loading screen
+  // Loading screen
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -182,7 +237,7 @@ export default function HomeScreen() {
     );
   }
 
-  // Show empty state when no decks
+  // Empty state screen
   if (decks.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
@@ -209,10 +264,9 @@ export default function HomeScreen() {
     );
   }
 
-  // Main screen with deck list
+  // Main screen with expandable FAB
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>My Flashcards</Text>
         <Text style={styles.headerSubtitle}>
@@ -220,7 +274,6 @@ export default function HomeScreen() {
         </Text>
       </View>
 
-      {/* Decks List */}
       <FlatList
         data={decks}
         keyExtractor={(item) => item.id}
@@ -228,35 +281,47 @@ export default function HomeScreen() {
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
       />
-      <View style={styles.floatingButtonContainer}>
-  {/* Regular Create Deck Button */}
-  <Pressable style={[styles.floatingButton, styles.regularButton]} onPress={handleOpenModal}>
-    <Ionicons name="add" size={24} color="white" />
-  </Pressable>
-  
-  {/* AI Generate Button */}
-  <Pressable style={[styles.floatingButton, styles.aiButton]} onPress={handleOpenAIModal}>
-    <Ionicons name="sparkles" size={20} color="white" />
-    <Text style={styles.aiButtonText}>AI</Text>
-  </Pressable>
-  
-    <AiCreateModal
-      visible={aiModalVisible}
-      onClose={handleCloseAIModal}
-      onDeckCreated={fetchDecks} // Refresh deck list after AI generation
-    />
-</View>
 
-      {/* Add Button */}
-      <Pressable style={styles.floatingButton} onPress={handleOpenModal}>
-        <Text style={styles.buttonText}>+</Text>
-      </Pressable>
+      {/* Backdrop overlay */}
+      <Animated.View style={[styles.backdrop, backdropStyle]} pointerEvents="auto">
+        <Pressable style={styles.backdropPressable} onPress={toggleFAB} />
+      </Animated.View>
 
-      {/* Create Deck Modal */}
+      {/* Floating Action Buttons */}
+      <View style={styles.fabContainer}>
+        {/* AI Create Sub-button */}
+        <Animated.View style={[styles.subButton, aiSubButtonStyle]}>
+          <Pressable style={[styles.fabButton, styles.aiButton]} onPress={handleOpenAIModal}>
+            <Ionicons name="sparkles" size={20} color="white" />
+          </Pressable>
+        </Animated.View>
+
+        {/* Create Deck Sub-button */}
+        <Animated.View style={[styles.subButton, createSubButtonStyle]}>
+          <Pressable style={[styles.fabButton, styles.createButton]} onPress={handleOpenModal}>
+            <Ionicons name="add" size={24} color="white" />
+          </Pressable>
+        </Animated.View>
+
+        {/* Main FAB */}
+        <Pressable style={styles.mainFab} onPress={toggleFAB}>
+          <Animated.View style={mainFabStyle}>
+            <Ionicons name="ellipsis-vertical" size={24} color="white" />
+          </Animated.View>
+        </Pressable>
+      </View>
+
+      {/* Modals */}
       <AddDeckModal
         visible={modalVisible}
         hideModal={handleCloseModal}
         onCreateDeck={handleCreateDeck}
+      />
+      
+      <AiCreateModal
+        visible={aiModalVisible}
+        onClose={handleCloseAIModal}
+        onDeckCreated={fetchDecks}
       />
     </SafeAreaView>
   );
@@ -266,6 +331,25 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f9fafb',
+  },
+  header: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#111827',
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginTop: 4,
+  },
+  listContainer: {
+    paddingBottom: 100,
   },
   emptyState: {
     flex: 1,
@@ -302,29 +386,54 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
-  header: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  headerTitle: {
+  buttonText: {
     fontSize: 28,
-    fontWeight: '700',
-    color: '#111827',
+    color: '#ffffff',
+    fontWeight: '300',
   },
-  headerSubtitle: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginTop: 4,
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-  listContainer: {
-    paddingBottom: 100,
+  backdropPressable: {
+    flex: 1,
   },
-  floatingButton: {
+  fabContainer: {
     position: 'absolute',
     bottom: 30,
-    right: 30,
+    right: 20,
+    alignItems: 'center',
+  },
+  subButton: {
+    alignItems: 'center',
+    marginBottom: -55,
+  },
+  fabButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  createButton: {
+    backgroundColor: '#111827',
+  },
+  aiButton: {
+    backgroundColor: '#111827',
+  },
+  mainFab: {
     backgroundColor: '#111827',
     width: 60,
     height: 60,
@@ -339,37 +448,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
-  },
-  buttonText: {
-    fontSize: 28,
-    color: '#ffffff',
-    fontWeight: '300',
-  },
-  floatingButtonContainer: {
-    position: 'absolute',
-    bottom: 20,
-    right: 20,
-    flexDirection: 'column',
-    gap: 12,
-  },
-  regularButton: {
-    backgroundColor: '#111827',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-  },
-  aiButton: {
-    backgroundColor: '#7c3aed', // Purple for AI
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 25,
-    gap: 6,
-  },
-  aiButtonText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '600',
   },
 });
