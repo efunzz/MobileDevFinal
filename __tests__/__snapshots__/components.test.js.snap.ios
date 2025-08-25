@@ -1,0 +1,307 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`StudyCard Component should match snapshot when not showing answer 1`] = `
+<View
+  style={
+    [
+      {
+        "flex": 1,
+      },
+      [
+        {
+          "minHeight": 300,
+        },
+        undefined,
+      ],
+    ]
+  }
+>
+  <View
+    collapsable={false}
+    style={
+      {
+        "backfaceVisibility": "hidden",
+        "backgroundColor": "#ffffff",
+        "borderRadius": 16,
+        "elevation": 4,
+        "height": "100%",
+        "justifyContent": "center",
+        "opacity": 1,
+        "padding": 32,
+        "position": "absolute",
+        "shadowColor": "#000",
+        "shadowOffset": {
+          "height": 4,
+          "width": 0,
+        },
+        "shadowOpacity": 0.1,
+        "shadowRadius": 8,
+        "transform": [
+          {
+            "rotateY": "0deg",
+          },
+        ],
+        "width": "100%",
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "flex": 1,
+          "justifyContent": "center",
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#6b7280",
+            "fontSize": 14,
+            "fontWeight": "600",
+            "letterSpacing": 0.5,
+            "marginBottom": 16,
+            "textAlign": "center",
+            "textTransform": "uppercase",
+          }
+        }
+      >
+        Question
+      </Text>
+      <Text
+        style={
+          {
+            "color": "#111827",
+            "fontSize": 20,
+            "fontWeight": "500",
+            "lineHeight": 28,
+            "textAlign": "center",
+          }
+        }
+      >
+        What is React Native?
+      </Text>
+    </View>
+  </View>
+  <View
+    collapsable={false}
+    style={
+      {
+        "backfaceVisibility": "hidden",
+        "backgroundColor": "#ffffff",
+        "borderRadius": 16,
+        "elevation": 4,
+        "height": "100%",
+        "justifyContent": "center",
+        "opacity": 0,
+        "padding": 32,
+        "position": "absolute",
+        "shadowColor": "#000",
+        "shadowOffset": {
+          "height": 4,
+          "width": 0,
+        },
+        "shadowOpacity": 0.1,
+        "shadowRadius": 8,
+        "transform": [
+          {
+            "rotateY": "180deg",
+          },
+        ],
+        "width": "100%",
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "flex": 1,
+          "justifyContent": "center",
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#6b7280",
+            "fontSize": 14,
+            "fontWeight": "600",
+            "letterSpacing": 0.5,
+            "marginBottom": 16,
+            "textAlign": "center",
+            "textTransform": "uppercase",
+          }
+        }
+      >
+        Answer
+      </Text>
+      <Text
+        style={
+          {
+            "color": "#111827",
+            "fontSize": 20,
+            "fontWeight": "500",
+            "lineHeight": 28,
+            "textAlign": "center",
+          }
+        }
+      >
+        A framework for building mobile apps
+      </Text>
+    </View>
+  </View>
+</View>
+`;
+
+exports[`StudyCard Component should match snapshot when showing answer 1`] = `
+<View
+  style={
+    [
+      {
+        "flex": 1,
+      },
+      [
+        {
+          "minHeight": 300,
+        },
+        undefined,
+      ],
+    ]
+  }
+>
+  <View
+    collapsable={false}
+    style={
+      {
+        "backfaceVisibility": "hidden",
+        "backgroundColor": "#ffffff",
+        "borderRadius": 16,
+        "elevation": 4,
+        "height": "100%",
+        "justifyContent": "center",
+        "opacity": 1,
+        "padding": 32,
+        "position": "absolute",
+        "shadowColor": "#000",
+        "shadowOffset": {
+          "height": 4,
+          "width": 0,
+        },
+        "shadowOpacity": 0.1,
+        "shadowRadius": 8,
+        "transform": [
+          {
+            "rotateY": "0deg",
+          },
+        ],
+        "width": "100%",
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "flex": 1,
+          "justifyContent": "center",
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#6b7280",
+            "fontSize": 14,
+            "fontWeight": "600",
+            "letterSpacing": 0.5,
+            "marginBottom": 16,
+            "textAlign": "center",
+            "textTransform": "uppercase",
+          }
+        }
+      >
+        Question
+      </Text>
+      <Text
+        style={
+          {
+            "color": "#111827",
+            "fontSize": 20,
+            "fontWeight": "500",
+            "lineHeight": 28,
+            "textAlign": "center",
+          }
+        }
+      >
+        What is React Native?
+      </Text>
+    </View>
+  </View>
+  <View
+    collapsable={false}
+    style={
+      {
+        "backfaceVisibility": "hidden",
+        "backgroundColor": "#ffffff",
+        "borderRadius": 16,
+        "elevation": 4,
+        "height": "100%",
+        "justifyContent": "center",
+        "opacity": 0,
+        "padding": 32,
+        "position": "absolute",
+        "shadowColor": "#000",
+        "shadowOffset": {
+          "height": 4,
+          "width": 0,
+        },
+        "shadowOpacity": 0.1,
+        "shadowRadius": 8,
+        "transform": [
+          {
+            "rotateY": "180deg",
+          },
+        ],
+        "width": "100%",
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "flex": 1,
+          "justifyContent": "center",
+        }
+      }
+    >
+      <Text
+        style={
+          {
+            "color": "#6b7280",
+            "fontSize": 14,
+            "fontWeight": "600",
+            "letterSpacing": 0.5,
+            "marginBottom": 16,
+            "textAlign": "center",
+            "textTransform": "uppercase",
+          }
+        }
+      >
+        Answer
+      </Text>
+      <Text
+        style={
+          {
+            "color": "#111827",
+            "fontSize": 20,
+            "fontWeight": "500",
+            "lineHeight": 28,
+            "textAlign": "center",
+          }
+        }
+      >
+        A framework for building mobile apps
+      </Text>
+    </View>
+  </View>
+</View>
+`;

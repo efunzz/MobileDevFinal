@@ -33,7 +33,7 @@ describe('StudyCard Component', () => {
   it('should render without crashing', () => {
     const testCard = { front: 'Test Question', back: 'Test Answer' };
     const { getByText } = render(<StudyCard card={testCard} showAnswer={false} />);
-    expect(getByText('Question')).toBeTruthy();
+    expect(getByText(/Test Question/)).toBeTruthy();
   });
 });
 

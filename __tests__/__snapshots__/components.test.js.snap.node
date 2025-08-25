@@ -1,0 +1,147 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`StudyCard Component should match snapshot when not showing answer 1`] = `
+<div
+  className="css-view-g5y9jx r-flex-13awgt0 r-minHeight-1xfddsp"
+  dir={null}
+  ref={[Function]}
+>
+  <div
+    className="css-view-g5y9jx r-backfaceVisibility-aqfbo4 r-backgroundColor-14lw9ot r-borderRadius-1867qdf r-boxShadow-12n5rxw r-height-1pi2tsx r-justifyContent-1777fci r-padding-494qqr r-position-u8s1d r-width-13qz1uu"
+    dir={null}
+    ref={[Function]}
+    style={
+      {
+        "opacity": 1,
+        "transform": "rotateY(0deg)",
+      }
+    }
+  >
+    <div
+      className="css-view-g5y9jx r-flex-13awgt0 r-justifyContent-1777fci"
+      dir={null}
+      ref={[Function]}
+    >
+      <div
+        className="css-text-146c3p1 r-color-1cucpzw r-fontSize-1b43r93 r-fontWeight-1kfrs79 r-letterSpacing-1ikidpy r-marginBottom-1ifxtd0 r-textAlign-q4m81j r-textTransform-tsynxw"
+        dir="auto"
+        ref={[Function]}
+      >
+        Question
+      </div>
+      <div
+        className="css-text-146c3p1 r-color-18zdu8c r-fontSize-adyw6z r-fontWeight-majxgm r-lineHeight-vrz42v r-textAlign-q4m81j"
+        dir="auto"
+        ref={[Function]}
+      >
+        What is React Native?
+      </div>
+    </div>
+  </div>
+  <div
+    className="css-view-g5y9jx r-backfaceVisibility-aqfbo4 r-backgroundColor-14lw9ot r-borderRadius-1867qdf r-boxShadow-12n5rxw r-height-1pi2tsx r-justifyContent-1777fci r-padding-494qqr r-position-u8s1d r-width-13qz1uu"
+    dir={null}
+    ref={[Function]}
+    style={
+      {
+        "opacity": 0,
+        "transform": "rotateY(180deg)",
+      }
+    }
+  >
+    <div
+      className="css-view-g5y9jx r-flex-13awgt0 r-justifyContent-1777fci"
+      dir={null}
+      ref={[Function]}
+    >
+      <div
+        className="css-text-146c3p1 r-color-1cucpzw r-fontSize-1b43r93 r-fontWeight-1kfrs79 r-letterSpacing-1ikidpy r-marginBottom-1ifxtd0 r-textAlign-q4m81j r-textTransform-tsynxw"
+        dir="auto"
+        ref={[Function]}
+      >
+        Answer
+      </div>
+      <div
+        className="css-text-146c3p1 r-color-18zdu8c r-fontSize-adyw6z r-fontWeight-majxgm r-lineHeight-vrz42v r-textAlign-q4m81j"
+        dir="auto"
+        ref={[Function]}
+      >
+        A framework for building mobile apps
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`StudyCard Component should match snapshot when showing answer 1`] = `
+<div
+  className="css-view-g5y9jx r-flex-13awgt0 r-minHeight-1xfddsp"
+  dir={null}
+  ref={[Function]}
+>
+  <div
+    className="css-view-g5y9jx r-backfaceVisibility-aqfbo4 r-backgroundColor-14lw9ot r-borderRadius-1867qdf r-boxShadow-12n5rxw r-height-1pi2tsx r-justifyContent-1777fci r-padding-494qqr r-position-u8s1d r-width-13qz1uu"
+    dir={null}
+    ref={[Function]}
+    style={
+      {
+        "opacity": 1,
+        "transform": "rotateY(0deg)",
+      }
+    }
+  >
+    <div
+      className="css-view-g5y9jx r-flex-13awgt0 r-justifyContent-1777fci"
+      dir={null}
+      ref={[Function]}
+    >
+      <div
+        className="css-text-146c3p1 r-color-1cucpzw r-fontSize-1b43r93 r-fontWeight-1kfrs79 r-letterSpacing-1ikidpy r-marginBottom-1ifxtd0 r-textAlign-q4m81j r-textTransform-tsynxw"
+        dir="auto"
+        ref={[Function]}
+      >
+        Question
+      </div>
+      <div
+        className="css-text-146c3p1 r-color-18zdu8c r-fontSize-adyw6z r-fontWeight-majxgm r-lineHeight-vrz42v r-textAlign-q4m81j"
+        dir="auto"
+        ref={[Function]}
+      >
+        What is React Native?
+      </div>
+    </div>
+  </div>
+  <div
+    className="css-view-g5y9jx r-backfaceVisibility-aqfbo4 r-backgroundColor-14lw9ot r-borderRadius-1867qdf r-boxShadow-12n5rxw r-height-1pi2tsx r-justifyContent-1777fci r-padding-494qqr r-position-u8s1d r-width-13qz1uu"
+    dir={null}
+    ref={[Function]}
+    style={
+      {
+        "opacity": 0,
+        "transform": "rotateY(180deg)",
+      }
+    }
+  >
+    <div
+      className="css-view-g5y9jx r-flex-13awgt0 r-justifyContent-1777fci"
+      dir={null}
+      ref={[Function]}
+    >
+      <div
+        className="css-text-146c3p1 r-color-1cucpzw r-fontSize-1b43r93 r-fontWeight-1kfrs79 r-letterSpacing-1ikidpy r-marginBottom-1ifxtd0 r-textAlign-q4m81j r-textTransform-tsynxw"
+        dir="auto"
+        ref={[Function]}
+      >
+        Answer
+      </div>
+      <div
+        className="css-text-146c3p1 r-color-18zdu8c r-fontSize-adyw6z r-fontWeight-majxgm r-lineHeight-vrz42v r-textAlign-q4m81j"
+        dir="auto"
+        ref={[Function]}
+      >
+        A framework for building mobile apps
+      </div>
+    </div>
+  </div>
+</div>
+`;
