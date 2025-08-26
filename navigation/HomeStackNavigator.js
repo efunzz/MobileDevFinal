@@ -1,5 +1,6 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
+import { Ionicons } from '@expo/vector-icons';
 
 //import screens
 import HomeScreen from '../screens/HomeScreen';
@@ -11,7 +12,33 @@ const Stack = createStackNavigator();
 
 export default function HomeStackNavigator() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: '#ffffff',
+          shadowColor: 'transparent',
+          elevation: 0,
+        },
+        headerTintColor: '#000000', // Makes back button black
+        headerTitleStyle: {
+          fontWeight: '600',
+          fontSize: 18,
+          color: '#000000',
+        },
+        headerBackTitleVisible: false, 
+        headerBackTitle: '',// Hides "Back" text
+        headerLeftContainerStyle: {
+          paddingLeft: 16,
+        },
+        headerBackImage: () => (
+          <Ionicons
+            name="chevron-back"
+            size={24}
+            color="#000000"
+          />
+        ),
+      }}
+    >
       <Stack.Screen 
         name="HomeMain" 
         component={HomeScreen} 
@@ -20,18 +47,24 @@ export default function HomeStackNavigator() {
       <Stack.Screen 
         name="CardList" 
         component={CardListScreen}
-        options={{ 
+        options={({ route }) => ({
           headerShown: true,
-          title: 'Cards',
-          headerBackTitle: 'Back'
-        }}
+          title:  'Cards',
+          headerStyle: {
+            backgroundColor: '#f9fafb', // Match your app background
+            shadowColor: 'transparent',
+            elevation: 0,
+            borderBottomWidth: 1,
+            borderBottomColor: '#f0f0f0',
+          },
+        })}
       />
        <Stack.Screen 
         name="StudyScreen" 
         component={StudyScreen}
         options={{ 
           headerShown: false,
-          presentation: 'card' // Optional: makes it slide up like a modal
+          presentation: 'card'
         }}
       />
       <Stack.Screen 

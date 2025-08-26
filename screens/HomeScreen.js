@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable, SafeAreaView, FlatList, Alert } from
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { supabase } from '../lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -38,6 +39,7 @@ export default function HomeScreen() {
   };
 
   const handleOpenAIModal = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setAiModalVisible(true);
     toggleFAB();
   };
@@ -48,6 +50,7 @@ export default function HomeScreen() {
 
   // FAB toggle function
   const toggleFAB = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const newState = !isFabOpen;
     setIsFabOpen(newState);
     fabExpanded.value = withSpring(newState ? 1 : 0, {
@@ -59,8 +62,7 @@ export default function HomeScreen() {
   // Backdrop animation
   const backdropStyle = useAnimatedStyle(() => {
     return {
-      opacity: withTiming(fabExpanded.value * 0.5, { duration: 200 }),
-      pointerEvents: fabExpanded.value > 0 ? 'auto' : 'none',
+      opacity: withTiming(fabExpanded.value * 0.5, { duration: 10 }),
     };
   });
 
@@ -74,7 +76,7 @@ export default function HomeScreen() {
 
   // Sub-button animations
   const createSubButtonStyle = useAnimatedStyle(() => {
-    const translateY = interpolate(fabExpanded.value, [0, 1], [0, -80]);
+    const translateY = interpolate(fabExpanded.value, [0, 1], [0, -70]);
     const opacity = interpolate(fabExpanded.value, [0, 0.5, 1], [0, 0, 1]);
     const scale = interpolate(fabExpanded.value, [0, 1], [0.3, 1]);
     
@@ -88,7 +90,7 @@ export default function HomeScreen() {
   });
 
   const aiSubButtonStyle = useAnimatedStyle(() => {
-    const translateY = interpolate(fabExpanded.value, [0, 1], [0, -140]);
+    const translateY = interpolate(fabExpanded.value, [0, 1], [0, -120]);
     const opacity = interpolate(fabExpanded.value, [0, 0.5, 1], [0, 0, 1]);
     const scale = interpolate(fabExpanded.value, [0, 1], [0.3, 1]);
     
@@ -212,6 +214,7 @@ export default function HomeScreen() {
 
   // Navigate to card list screen
   const handleDeckPress = (deck) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     navigation.navigate('CardList', { deck });
   };
 
@@ -284,7 +287,10 @@ export default function HomeScreen() {
       />
 
       {/* Backdrop overlay */}
-      <Animated.View style={[styles.backdrop, backdropStyle]} pointerEvents="auto">
+      <Animated.View 
+        style={[styles.backdrop, backdropStyle]} 
+        pointerEvents={isFabOpen ? "auto" : "none"}
+      >
         <Pressable style={styles.backdropPressable} onPress={toggleFAB} />
       </Animated.View>
 
@@ -411,7 +417,7 @@ const styles = StyleSheet.create({
   },
   subButton: {
     alignItems: 'center',
-    marginBottom: -55,
+    marginBottom: -45,
   },
   fabButton: {
     width: 60,
