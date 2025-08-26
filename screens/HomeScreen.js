@@ -28,6 +28,7 @@ export default function HomeScreen() {
 
   // Modal handlers
   const handleOpenModal = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setModalVisible(true);
     toggleFAB();
   };
