@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   View,
@@ -19,14 +18,14 @@ import { supabase } from '../lib/supabase';
 export default function AiCreateModal({ visible, onClose, onDeckCreated }) {
   const [deckName, setDeckName] = useState('');
   const [topic, setTopic] = useState('');
-  const [cardCount, setCardCount] = useState(10);
+  const [cardCount, setCardCount] = useState(8);
   const [loading, setLoading] = useState(false);
 
   // Reset form when modal opens
   const handleClose = () => {
     setDeckName('');
     setTopic('');
-    setCardCount(10);
+    setCardCount(8);
     setLoading(false);
     onClose();
   };
@@ -41,7 +40,7 @@ export default function AiCreateModal({ visible, onClose, onDeckCreated }) {
     setLoading(true);
 
     try {
-      console.log(`🤖 Starting AI generation for: ${topic}`);
+      console.log(`Starting AI generation for: ${topic}`);
       
       // Step 1: Generate flashcards with AI
       const aiResult = await generateFlashcards(topic, cardCount);
@@ -52,7 +51,7 @@ export default function AiCreateModal({ visible, onClose, onDeckCreated }) {
         return;
       }
 
-      console.log(`✅ AI generated ${aiResult.flashcards.length} cards`);
+      console.log(`AI generated ${aiResult.flashcards.length} cards`);
 
       // Step 2: Get current user
       const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -81,7 +80,7 @@ export default function AiCreateModal({ visible, onClose, onDeckCreated }) {
         return;
       }
 
-      console.log(`✅ Created deck with ID: ${deckData.id}`);
+      console.log(`Created deck with ID: ${deckData.id}`);
 
       // Step 4: Create cards in database
       const cardsToInsert = aiResult.flashcards.map((card, index) => ({
@@ -104,15 +103,15 @@ export default function AiCreateModal({ visible, onClose, onDeckCreated }) {
         return;
       }
 
-      console.log(`✅ Created ${cardsToInsert.length} cards`);
+      console.log(`Created ${cardsToInsert.length} cards`);
 
       // Step 5: Success!
       Alert.alert(
-        'AI Deck Created! 🎉',
+        'AI Deck Created!',
         `Successfully generated "${deckName}" with ${aiResult.flashcards.length} cards about ${topic}`,
         [
           {
-            text: 'Awesome!',
+            text: 'Done',
             onPress: () => {
               handleClose();
               if (onDeckCreated) onDeckCreated();
@@ -128,9 +127,9 @@ export default function AiCreateModal({ visible, onClose, onDeckCreated }) {
     }
   };
 
-  // Card count controls
-  const incrementCount = () => setCardCount(prev => Math.min(prev + 5, 20));
-  const decrementCount = () => setCardCount(prev => Math.max(prev - 5, 5));
+  // Card count controls - INCREMENT BY 1
+  const incrementCount = () => setCardCount(prev => Math.min(prev + 1, 25));
+  const decrementCount = () => setCardCount(prev => Math.max(prev - 1, 3));
 
   return (
     <Modal visible={visible} animationType="fade" transparent={true}>
@@ -175,14 +174,20 @@ export default function AiCreateModal({ visible, onClose, onDeckCreated }) {
 
                 {/* Card Count */}
                 <View style={styles.inputContainer}>
-                  <Text style={styles.label}>Number of Cards</Text>
+                  <Text style={styles.label}>Number of Cards (3-25)</Text>
                   <View style={styles.counterContainer}>
                     <Pressable 
-                      style={styles.counterButton} 
+                      style={[
+                        styles.counterButton,
+                        (cardCount <= 3 || loading) && styles.counterButtonDisabled
+                      ]} 
                       onPress={decrementCount}
-                      disabled={loading}
+                      disabled={cardCount <= 3 || loading}
                     >
-                      <Text style={styles.counterButtonText}>−</Text>
+                      <Text style={[
+                        styles.counterButtonText,
+                        (cardCount <= 3 || loading) && styles.counterButtonTextDisabled
+                      ]}>−</Text>
                     </Pressable>
                     
                     <View style={styles.counterDisplay}>
@@ -190,11 +195,17 @@ export default function AiCreateModal({ visible, onClose, onDeckCreated }) {
                     </View>
                     
                     <Pressable 
-                      style={styles.counterButton} 
+                      style={[
+                        styles.counterButton,
+                        (cardCount >= 25 || loading) && styles.counterButtonDisabled
+                      ]} 
                       onPress={incrementCount}
-                      disabled={loading}
+                      disabled={cardCount >= 25 || loading}
                     >
-                      <Text style={styles.counterButtonText}>+</Text>
+                      <Text style={[
+                        styles.counterButtonText,
+                        (cardCount >= 25 || loading) && styles.counterButtonTextDisabled
+                      ]}>+</Text>
                     </Pressable>
                   </View>
                 </View>
@@ -299,10 +310,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f9fafb',
   },
+  counterButtonDisabled: {
+    backgroundColor: '#f3f4f6',
+  },
   counterButtonText: {
     fontSize: 20,
     fontWeight: '500',
     color: '#374151',
+  },
+  counterButtonTextDisabled: {
+    color: '#9ca3af',
   },
   counterDisplay: {
     flex: 1,

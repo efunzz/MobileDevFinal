@@ -4,16 +4,51 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 const CardItem = ({ card, index, onPress }) => {
   const isEmpty = card.isEmpty || (!card.front && !card.back);
   
+  // Calculate if card is due and days remaining
+  const getDueStatus = (card) => {
+    if (!card.next_review_date || isEmpty) return { isDue: true, daysLeft: 0 };
+    
+    const now = new Date();
+    const reviewDate = new Date(card.next_review_date);
+    const daysLeft = Math.ceil((reviewDate - now) / (1000 * 60 * 60 * 24));
+    
+    return {
+      isDue: daysLeft <= 0,
+      daysLeft: Math.max(0, daysLeft)
+    };
+  };
+
+  const { isDue, daysLeft } = getDueStatus(card);
+  
   return (
-    <Pressable style={styles.card} onPress={onPress}>
+    <Pressable 
+      style={[
+        styles.card,
+        !isDue && !isEmpty && styles.cardNotDue, // Add transparency for non-due cards
+        isEmpty && styles.cardEmpty
+      ]} 
+      onPress={onPress}
+    >
       <View style={styles.cardContent}>
         <View style={styles.cardHeader}>
           <Text style={styles.cardNumber}>Card {index + 1}</Text>
-          <View style={[styles.statusBadge, isEmpty ? styles.emptyBadge : styles.filledBadge]}>
-            <Text style={[styles.statusText, isEmpty ? styles.emptyText : styles.filledText]}>
-              {isEmpty ? 'Empty' : 'Filled'}
-            </Text>
-          </View>
+          
+          {/* Enhanced status badge with due information */}
+          {isEmpty ? (
+            <View style={[styles.statusBadge, styles.emptyBadge]}>
+              <Text style={[styles.statusText, styles.emptyText]}>Empty</Text>
+            </View>
+          ) : isDue ? (
+            <View style={[styles.statusBadge, styles.dueBadge]}>
+              <Text style={[styles.statusText, styles.dueText]}>Ready!</Text>
+            </View>
+          ) : (
+            <View style={[styles.statusBadge, styles.scheduledBadge]}>
+              <Text style={[styles.statusText, styles.scheduledText]}>
+                Due in {daysLeft}d
+              </Text>
+            </View>
+          )}
         </View>
         
         <View style={styles.cardPreview}>
@@ -31,6 +66,15 @@ const CardItem = ({ card, index, onPress }) => {
             </>
           )}
         </View>
+        
+        {/* Study progress indicator */}
+        {!isEmpty && card.study_count && (
+          <View style={styles.studyProgress}>
+            <Text style={styles.studyProgressText}>
+              Studied {card.study_count} time{card.study_count !== 1 ? 's' : ''}
+            </Text>
+          </View>
+        )}
       </View>
     </Pressable>
   );
@@ -54,6 +98,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#f0f0f0',
   },
+  cardNotDue: {
+    opacity: 0.5, // Make non-due cards translucent
+    backgroundColor: '#f8f9fa',
+  },
+  cardEmpty: {
+    borderStyle: 'dashed',
+    borderColor: '#d1d5db',
+    backgroundColor: 'transparent',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
   cardContent: {
     gap: 12,
   },
@@ -75,8 +130,11 @@ const styles = StyleSheet.create({
   emptyBadge: {
     backgroundColor: '#fef3c7',
   },
-  filledBadge: {
+  dueBadge: {
     backgroundColor: '#d1fae5',
+  },
+  scheduledBadge: {
+    backgroundColor: '#e0e7ff',
   },
   statusText: {
     fontSize: 12,
@@ -85,8 +143,11 @@ const styles = StyleSheet.create({
   emptyText: {
     color: '#92400e',
   },
-  filledText: {
+  dueText: {
     color: '#065f46',
+  },
+  scheduledText: {
+    color: '#3730a3',
   },
   cardPreview: {
     gap: 4,
@@ -104,6 +165,14 @@ const styles = StyleSheet.create({
   },
   emptyPreviewText: {
     color: '#9ca3af',
+    fontStyle: 'italic',
+  },
+  studyProgress: {
+    marginTop: 4,
+  },
+  studyProgressText: {
+    fontSize: 11,
+    color: '#6b7280',
     fontStyle: 'italic',
   },
 });

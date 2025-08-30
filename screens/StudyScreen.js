@@ -10,6 +10,7 @@ import {
 import * as Haptics from 'expo-haptics';
 import StudyCard from '../components/StudyCard';
 import { supabase } from '../lib/supabase';
+import { calculateNextReviewDate } from '../utils/spacedRep';
 
 export default function StudyScreen({ route, navigation }) {
   const { cards, deckName } = route.params || {};
@@ -35,15 +36,22 @@ export default function StudyScreen({ route, navigation }) {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setShowAnswer(true);
   };
-  // Save user confidence rating to database
+
+  // Save user confidence rating to database with spaced repetition
   const saveConfidenceRating = async (cardId, confidenceLevel) => {
     try {
+      // Calculate next review date using spaced repetition algorithm
+      const currentInterval = currentCard.review_interval || 0;
+      const { nextReviewDate, interval } = calculateNextReviewDate(confidenceLevel, currentInterval);
+      
       const { error } = await supabase
         .from('cards')
         .update({
           confidence_level: confidenceLevel,
           last_studied: new Date().toISOString(),
-          study_count: 1
+          next_review_date: nextReviewDate,
+          review_interval: interval,
+          study_count: (currentCard.study_count || 0) + 1
         })
         .eq('id', cardId);
   
@@ -74,11 +82,10 @@ export default function StudyScreen({ route, navigation }) {
           break;
       }
     } catch (error) {
-      // Haptics might not be available on all devices
       console.error('Haptic feedback error:', error);
     }
   
-    // Keep existing code unchanged
+    // Save with spaced repetition algorithm
     await saveConfidenceRating(currentCard.id, rating);
     
     setStudyStats(prev => ({
@@ -101,13 +108,12 @@ export default function StudyScreen({ route, navigation }) {
 
   // Complete study session and navigate to statistics
   const handleFinishStudy = async () => {
-    // Add success haptic when completing study session
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     
     navigation.navigate('StudyStatistics', {
       studyStats: {
         ...studyStats,
-        easy: studyStats.easy + 1
+        easy: studyStats.easy 
       },
       deckName: deckName || 'Study Session',
       cards: studyCards
@@ -124,7 +130,6 @@ export default function StudyScreen({ route, navigation }) {
         { 
           text: 'End Session', 
           onPress: async () => {
-            // Add light haptic when ending session
             await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             navigation.goBack();
           }
@@ -181,6 +186,7 @@ export default function StudyScreen({ route, navigation }) {
                 onPress={() => handleConfidenceRating('again')}
               >
                 <Text style={styles.confidenceButtonText}>Again</Text>
+                <Text style={styles.confidenceSubText}>~2h</Text>
               </Pressable>
               
               <Pressable 
@@ -188,6 +194,7 @@ export default function StudyScreen({ route, navigation }) {
                 onPress={() => handleConfidenceRating('hard')}
               >
                 <Text style={styles.confidenceButtonText}>Hard</Text>
+                <Text style={styles.confidenceSubText}>1d+</Text>
               </Pressable>
               
               <Pressable 
@@ -195,6 +202,7 @@ export default function StudyScreen({ route, navigation }) {
                 onPress={() => handleConfidenceRating('good')}
               >
                 <Text style={styles.confidenceButtonText}>Good</Text>
+                <Text style={styles.confidenceSubText}>3d+</Text>
               </Pressable>
               
               <Pressable 
@@ -202,6 +210,7 @@ export default function StudyScreen({ route, navigation }) {
                 onPress={() => handleConfidenceRating('easy')}
               >
                 <Text style={styles.confidenceButtonText}>Easy</Text>
+                <Text style={styles.confidenceSubText}>7d+</Text>
               </Pressable>
             </View>
           </View>
@@ -331,6 +340,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#111827',
+  },
+  confidenceSubText: {
+    fontSize: 10,
+    color: '#6b7280',
+    marginTop: 2,
   },
   emptyContainer: {
     flex: 1,
