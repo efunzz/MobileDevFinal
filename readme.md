@@ -198,5 +198,5 @@ npm test -- --coverage
 ---
 
 **Course:** CM3050 Mobile Development  
-**Student:** [Your Name]  
-**Academic Year:** [Year]
+**Student:** Irfan Sofyan Bin Zufri  
+**Academic Year:** 2025

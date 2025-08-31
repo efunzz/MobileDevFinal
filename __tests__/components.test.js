@@ -1,35 +1,33 @@
-// __tests__/components.test.js
-// Testing component logic and rendering
-
 import React from 'react';
 import { render } from '@testing-library/react-native';
-
-// Import your components
 import StudyCard from '../components/StudyCard';
 import DeckCard from '../components/DeckCard';
 
 describe('StudyCard Component', () => {
-  
+
+  // Test StudyCard snapshot when answer is hidden
   it('should match snapshot when not showing answer', () => {
-    const testCard = { 
-      front: 'What is React Native?', 
-      back: 'A framework for building mobile apps' 
+    const testCard = {
+      front: 'What is React Native?',
+      back: 'A framework for building mobile apps'
     };
     
     const snapshot = render(<StudyCard card={testCard} showAnswer={false} />);
     expect(snapshot.toJSON()).toMatchSnapshot();
   });
-  
+
+  // Test StudyCard snapshot when answer is revealed
   it('should match snapshot when showing answer', () => {
-    const testCard = { 
-      front: 'What is React Native?', 
-      back: 'A framework for building mobile apps' 
+    const testCard = {
+      front: 'What is React Native?',
+      back: 'A framework for building mobile apps'
     };
     
     const snapshot = render(<StudyCard card={testCard} showAnswer={true} />);
     expect(snapshot.toJSON()).toMatchSnapshot();
   });
-  
+
+  // Test StudyCard renders content correctly
   it('should render without crashing', () => {
     const testCard = { front: 'Test Question', back: 'Test Answer' };
     const { getByText } = render(<StudyCard card={testCard} showAnswer={false} />);
@@ -38,10 +36,11 @@ describe('StudyCard Component', () => {
 });
 
 describe('DeckCard Component', () => {
-  
+
+  // Test DeckCard snapshot with mock data
   it('should match snapshot', () => {
-    const testDeck = { 
-      id: 1, 
+    const testDeck = {
+      id: 1,
       name: 'Test Deck',
       created_at: '2023-01-01',
       cards: [
@@ -54,10 +53,11 @@ describe('DeckCard Component', () => {
     const snapshot = render(<DeckCard deck={testDeck} onPress={mockOnPress} />);
     expect(snapshot.toJSON()).toMatchSnapshot();
   });
-  
+
+  // Test DeckCard handles props correctly
   it('should handle props correctly', () => {
-    const testDeck = { 
-      id: 1, 
+    const testDeck = {
+      id: 1,
       name: 'Spanish Cards',
       cards: []
     };
@@ -69,24 +69,24 @@ describe('DeckCard Component', () => {
 });
 
 describe('Component Logic Tests', () => {
-  
+
+  // Test answer reveal state transitions
   it('should handle card state transitions', () => {
     let showAnswer = false;
     
-    // Reveal answer
     showAnswer = true;
     expect(showAnswer).toBe(true);
     
-    // Reset for next card
     showAnswer = false;
     expect(showAnswer).toBe(false);
   });
-  
+
+  // Test card data structure validation
   it('should handle card data correctly', () => {
-    const cardData = { 
-      front: 'Question', 
+    const cardData = {
+      front: 'Question',
       back: 'Answer',
-      id: 1 
+      id: 1
     };
     
     expect(cardData.front).toBe('Question');
