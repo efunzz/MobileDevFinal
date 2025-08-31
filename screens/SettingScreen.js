@@ -7,43 +7,40 @@ import {
   Pressable,
   Alert,
   Switch,
-  Button,
 } from 'react-native';
 import { supabase } from '../lib/supabase';
 import ReminderModal from '../components/ReminderModal';
-import NotificationService from '../services/NotificationService'
+import NotificationService from '../services/NotificationService';
 import * as Haptics from 'expo-haptics';
 
-export default function SettingsScreen({ navigation }) {
+// Main settings screen for app configuration and account management
+const SettingsScreen = ({ navigation }) => {
   const [reminderEnabled, setReminderEnabled] = useState(false);
   const [reminderTime, setReminderTime] = useState({ hour: 19, minute: 0 });
   const [modalVisible, setModalVisible] = useState(false);
-  const [expoPushToken, setExpoPushToken] = useState('');
 
   useEffect(() => {
     initializeNotifications();
     loadSettings();
 
-    // Cleanup on unmount
     return () => {
       NotificationService.cleanup();
     };
   }, []);
 
-  // Initialize notification service
+  // Set up notification service
   const initializeNotifications = async () => {
-    const token = await NotificationService.initialize();
-    setExpoPushToken(token);
+    await NotificationService.initialize();
   };
 
-  // Load settings using service
+  // Load saved reminder preferences
   const loadSettings = async () => {
     const settings = await NotificationService.loadReminderSettings();
     setReminderEnabled(settings.enabled);
     setReminderTime(settings.time);
   };
 
-  // Handle reminder toggle
+  // Toggle daily reminder on/off
   const handleReminderToggle = async (value) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     
@@ -56,7 +53,7 @@ export default function SettingsScreen({ navigation }) {
     }
   };
 
-  // Handle setting reminder
+  // Save new reminder time and schedule notification
   const handleSetReminder = async (hour, minute) => {
     const newTime = { hour, minute };
     setReminderTime(newTime);
@@ -67,7 +64,7 @@ export default function SettingsScreen({ navigation }) {
       await NotificationService.saveReminderSettings(true, newTime);
       
       Alert.alert(
-        'Reminder Set! 🔔',
+        'Reminder Set',
         `Daily study reminder at ${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`,
         [{ text: 'OK', onPress: () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) }]
       );
@@ -76,13 +73,7 @@ export default function SettingsScreen({ navigation }) {
     }
   };
 
-  // Test notification
-  const testNotification = async () => {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await NotificationService.sendTestNotification();
-  };
-
-  // Handle logout
+  // Sign out user with confirmation
   const handleLogout = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     
@@ -103,19 +94,6 @@ export default function SettingsScreen({ navigation }) {
       </View>
 
       <View style={styles.content}>
-        {/* Push Token Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Push Notifications</Text>
-          <Text style={styles.tokenLabel}>Expo Push Token:</Text>
-          <Text style={styles.tokenText} selectable>{expoPushToken}</Text>
-          
-          <Button
-            title="Test notification (5s)"
-            onPress={testNotification}
-          />
-        </View>
-
-        {/* Daily Reminder Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Study Reminders</Text>
           
@@ -147,7 +125,6 @@ export default function SettingsScreen({ navigation }) {
           )}
         </View>
 
-        {/* Account Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account</Text>
           
@@ -157,7 +134,6 @@ export default function SettingsScreen({ navigation }) {
         </View>
       </View>
 
-      {/* Reminder Modal */}
       <ReminderModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -166,9 +142,8 @@ export default function SettingsScreen({ navigation }) {
       />
     </SafeAreaView>
   );
-}
+};
 
-// Styles remain the same as before...
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -201,20 +176,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
     marginBottom: 16,
-  },
-  tokenLabel: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginBottom: 8,
-  },
-  tokenText: {
-    fontSize: 12,
-    color: '#111827',
-    backgroundColor: '#f3f4f6',
-    padding: 8,
-    borderRadius: 6,
-    marginBottom: 16,
-    fontFamily: 'monospace',
   },
   settingRow: {
     flexDirection: 'row',
@@ -261,3 +222,5 @@ const styles = StyleSheet.create({
     color: '#dc2626',
   },
 });
+
+export default SettingsScreen;

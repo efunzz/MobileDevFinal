@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, TextInput, Alert } from 'react-native';
-import { supabase } from '../../lib/supabase'; // Uncommented
+import { supabase } from '../../lib/supabase';
 
-export default function LoginScreen({ navigation }) {
+const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Authenticate user with email and password
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please enter both email and password');
@@ -14,7 +15,6 @@ export default function LoginScreen({ navigation }) {
     }
 
     setLoading(true);
-    console.log('Starting login for:', email);
 
     try {
       const { error } = await supabase.auth.signInWithPassword({ 
@@ -25,7 +25,6 @@ export default function LoginScreen({ navigation }) {
       if (error) {
         Alert.alert('Login Failed', error.message);
       }
-      // No need to navigate manually - StackNavigator handles this via session
     } catch (e) {
       console.error('Login caught error:', e);
       Alert.alert('Unexpected Error', e.message);
@@ -73,7 +72,7 @@ export default function LoginScreen({ navigation }) {
       </TouchableOpacity>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -123,3 +122,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 });
+
+export default LoginScreen;

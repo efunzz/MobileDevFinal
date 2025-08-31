@@ -1,5 +1,4 @@
-// components/EditCardModal.js - Minimal Camera Integration
-import React, { useState , useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,13 +15,23 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 
-export default function EditCardModal({ visible, card, onSave, onClose }) {
+const EditCardModal = ({ visible, card, onSave, onClose }) => {
   const [front, setFront] = useState(card?.front || '');
   const [back, setBack] = useState(card?.back || '');
   const [frontImage, setFrontImage] = useState(card?.frontImage || null);
   const [backImage, setBackImage] = useState(card?.backImage || null);
 
-  // Handle save
+  // Update form fields when card prop changes
+  useEffect(() => {
+    if (card) {
+      setFront(card.front || '');
+      setBack(card.back || '');
+      setFrontImage(card.frontImage || null);
+      setBackImage(card.backImage || null);
+    }
+  }, [card]);
+
+  // Save card with validation
   const handleSave = () => {
     if (!front.trim() && !back.trim() && !frontImage && !backImage) {
       Alert.alert('Error', 'Please add some content to the card');
@@ -41,7 +50,7 @@ export default function EditCardModal({ visible, card, onSave, onClose }) {
     onSave(updatedCard);
   };
 
-  // Show image options
+  // Show image source selection options
   const showImageOptions = (target) => {
     Alert.alert(
       'Add Image',
@@ -54,10 +63,9 @@ export default function EditCardModal({ visible, card, onSave, onClose }) {
     );
   };
 
-  // Take photo
+  // Capture photo with camera
   const takePhoto = async (target) => {
     try {
-      // Request camera permission
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert('Permission needed', 'Camera permission is required');
@@ -65,10 +73,10 @@ export default function EditCardModal({ visible, card, onSave, onClose }) {
       }
 
       const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: 'images', // Use string instead
+        mediaTypes: 'images',
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 0.7, // Compress to reduce size
+        quality: 0.7,
       });
 
       if (!result.canceled && result.assets[0]) {
@@ -81,14 +89,14 @@ export default function EditCardModal({ visible, card, onSave, onClose }) {
         }
       }
     } catch (error) {
+      console.error('Camera error:', error);
       Alert.alert('Error', 'Failed to take photo');
     }
   };
 
-  // Pick from library
+  // Select image from photo library
   const pickImage = async (target) => {
     try {
-      // Request media library permission
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert('Permission needed', 'Photo library permission is required');
@@ -96,10 +104,10 @@ export default function EditCardModal({ visible, card, onSave, onClose }) {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: 'images', // Use string instead
+        mediaTypes: 'images',
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 0.7, // Compress to reduce size
+        quality: 0.7,
       });
 
       if (!result.canceled && result.assets[0]) {
@@ -117,7 +125,7 @@ export default function EditCardModal({ visible, card, onSave, onClose }) {
     }
   };
 
-  // Remove image
+  // Remove image from card side
   const removeImage = (target) => {
     if (target === 'front') {
       setFrontImage(null);
@@ -125,15 +133,6 @@ export default function EditCardModal({ visible, card, onSave, onClose }) {
       setBackImage(null);
     }
   };
-   // Reset state when card changes
-   useEffect(() => {
-    if (card) {
-      setFront(card.front || '');
-      setBack(card.back || '');
-      setFrontImage(card.frontImage || null);
-      setBackImage(card.backImage || null);
-    }
-  }, [card]);
 
   return (
     <Modal visible={visible} animationType="slide" transparent={true}>
@@ -143,10 +142,8 @@ export default function EditCardModal({ visible, card, onSave, onClose }) {
             <View style={styles.modalContainer}>
               <ScrollView style={styles.modalContent}>
                 
-                {/* Header */}
                 <Text style={styles.title}>Edit Card {(card?.index || 0) + 1}</Text>
                 
-                {/* Front Side */}
                 <View style={styles.cardSide}>
                   <View style={styles.cardHeader}>
                     <Text style={styles.label}>Front</Text>
@@ -181,7 +178,6 @@ export default function EditCardModal({ visible, card, onSave, onClose }) {
                   )}
                 </View>
 
-                {/* Back Side */}
                 <View style={styles.cardSide}>
                   <View style={styles.cardHeader}>
                     <Text style={styles.label}>Back</Text>
@@ -216,7 +212,6 @@ export default function EditCardModal({ visible, card, onSave, onClose }) {
                   )}
                 </View>
 
-                {/* Action Buttons */}
                 <View style={styles.buttonContainer}>
                   <Pressable style={styles.cancelButton} onPress={onClose}>
                     <Text style={styles.cancelButtonText}>Cancel</Text>
@@ -234,7 +229,7 @@ export default function EditCardModal({ visible, card, onSave, onClose }) {
       </TouchableWithoutFeedback>
     </Modal>
   );
-}
+};
 
 const styles = StyleSheet.create({
   overlay: {
@@ -320,11 +315,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  removeText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
   buttonContainer: {
     flexDirection: 'row',
     gap: 12,
@@ -357,3 +347,5 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
 });
+
+export default EditCardModal;

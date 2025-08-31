@@ -1,26 +1,31 @@
-import React, {useState} from 'react';
-import {Modal, StyleSheet, Text, Pressable, View, TextInput, TouchableWithoutFeedback, Keyboard} from 'react-native';
-//imports for supabase and auth context
-import { supabase } from '../lib/supabase'; // ← ADD THIS IMPORT
-// for bettery system architecture import { useAuth } from '../context/AuthContext'; // ← ADD THIS IMPORT
-
+import React, { useState } from 'react';
+import {
+  Modal,
+  StyleSheet,
+  Text,
+  Pressable,
+  View,
+  TextInput,
+  TouchableWithoutFeedback,
+  Keyboard
+} from 'react-native';
+import { supabase } from '../lib/supabase';
 
 const AddDeckModal = ({ visible, hideModal, onCreateDeck }) => {
-
   const [deckName, setDeckName] = useState('');
   const [cardNumber, setCardNumber] = useState('5');
 
+  // Create new deck in Supabase database
   const handleCreateDeck = async () => {
     if (!deckName.trim()) return;
-  
+
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    console.log("Creating deck for user:", user?.id);
     
     if (authError || !user) {
       console.error('User not authenticated:', authError);
       return;
     }
-  
+
     const { data, error } = await supabase
       .from('decks')
       .insert([{
@@ -31,27 +36,25 @@ const AddDeckModal = ({ visible, hideModal, onCreateDeck }) => {
       }])
       .select()
       .single();
-  
+
     if (error) {
       console.error('Error creating deck:', error);
       return;
     }
-  
-    console.log("Deck saved in Supabase:", data);
-  
+
     onCreateDeck(data);
     
     setDeckName('');
     setCardNumber('5');
     hideModal();
   };
-  
 
-
+  // Increase card count by 1
   const incrementCard = () => {
     setCardNumber((parseInt(cardNumber) + 1).toString());
   };
 
+  // Decrease card count by 1 (minimum 1)
   const decrementCard = () => {
     const newNumber = Math.max(1, parseInt(cardNumber) - 1);
     setCardNumber(newNumber.toString());
@@ -62,18 +65,16 @@ const AddDeckModal = ({ visible, hideModal, onCreateDeck }) => {
       animationType="fade"
       transparent={true}
       visible={visible}
-      onRequestClose={hideModal}>
-      
+      onRequestClose={hideModal}
+    >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.overlay}>
           <TouchableWithoutFeedback onPress={() => {}}>
             <View style={styles.modalContainer}>
               <View style={styles.modalContent}>
                 
-                {/* Header */}
                 <Text style={styles.title}>Create New Deck</Text>
                 
-                {/* Deck Name Input */}
                 <View style={styles.inputContainer}>
                   <Text style={styles.label}>Deck Name</Text>
                   <TextInput
@@ -84,8 +85,7 @@ const AddDeckModal = ({ visible, hideModal, onCreateDeck }) => {
                     onChangeText={setDeckName}
                   />
                 </View>
-  
-                {/* Card Counter */}
+
                 <View style={styles.inputContainer}>
                   <Text style={styles.label}>Number of Cards</Text>
                   <View style={styles.counterContainer}>
@@ -108,19 +108,22 @@ const AddDeckModal = ({ visible, hideModal, onCreateDeck }) => {
                     </Pressable>
                   </View>
                 </View>
-  
-                {/* Action Buttons */}
+
                 <View style={styles.buttonContainer}>
                   <Pressable 
                     style={[styles.button, styles.cancelButton]} 
-                    onPress={() => hideModal()}
+                    onPress={hideModal}
                   >
                     <Text style={styles.cancelButtonText}>Cancel</Text>
                   </Pressable>
                   
                   <Pressable 
-                    style={[styles.button, styles.createButton, !deckName.trim() && styles.disabledButton]} 
-                    onPress={() => handleCreateDeck()}
+                    style={[
+                      styles.button, 
+                      styles.createButton, 
+                      !deckName.trim() && styles.disabledButton
+                    ]} 
+                    onPress={handleCreateDeck}
                     disabled={!deckName.trim()}
                   >
                     <Text style={styles.createButtonText}>Create Deck</Text>
@@ -134,9 +137,6 @@ const AddDeckModal = ({ visible, hideModal, onCreateDeck }) => {
       </TouchableWithoutFeedback>
     </Modal>
   );
-
-  
-   
 };
 
 const styles = StyleSheet.create({
@@ -240,13 +240,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderWidth: 1,
     borderColor: '#d1d5db',
-    flex: 1,
   },
   cancelButtonText: {
     fontSize: 16,
     fontWeight: '500',
     color: '#374151',
-    flex: 1,
   },
   createButton: {
     backgroundColor: '#111827',

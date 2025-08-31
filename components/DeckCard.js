@@ -1,4 +1,3 @@
-// Enhanced DeckCard.js with swipe-to-delete
 import React, { useState } from 'react';
 import { 
   View, 
@@ -16,31 +15,28 @@ import Animated, {
 } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 
+// Determine progress bar color based on completion percentage
+const getProgressColor = (progress) => {
+  if (progress >= 80) return '#10b981';
+  if (progress >= 60) return '#3b82f6';
+  if (progress >= 40) return '#f59e0b';
+  return '#ef4444';
+};
+
+// Trigger haptic feedback for user interactions
+const triggerHaptic = () => {
+  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+};
+
 const DeckCard = ({ deck, onPress, onDelete }) => {
   const totalCards = deck.totalCards || 0;
   const studiedCards = deck.studiedCards || 0;
   const [isRevealed, setIsRevealed] = useState(false);
   
-  // Animation values
   const translateX = useSharedValue(0);
-
-  // Progress based on confident cards (good + easy)
   const progress = totalCards > 0 ? (studiedCards / totalCards) * 100 : 0;
 
-  // Determine progress color
-  const getProgressColor = () => {
-    if (progress >= 80) return '#10b981';  // Green - excellent
-    if (progress >= 60) return '#3b82f6';  // Blue - good
-    if (progress >= 40) return '#f59e0b';  // Yellow - okay
-    return '#ef4444';  // Red - needs work
-  };
-
-  // Trigger haptic feedback
-  const triggerHaptic = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  };
-
-  // Handle delete with confirmation
+  // Show delete confirmation dialog
   const handleDelete = () => {
     Alert.alert(
       'Delete Deck',
@@ -50,7 +46,6 @@ const DeckCard = ({ deck, onPress, onDelete }) => {
           text: 'Cancel', 
           style: 'cancel',
           onPress: () => {
-            // Close the swipe when cancelled
             translateX.value = withSpring(0);
             setIsRevealed(false);
           }
@@ -67,38 +62,34 @@ const DeckCard = ({ deck, onPress, onDelete }) => {
     );
   };
 
-  // Pan gesture for swipe
+  // Handle swipe gesture for delete action
   const panGesture = Gesture.Pan()
     .onUpdate((event) => {
-      // Only allow left swipe (negative values)
       if (event.translationX < 0) {
         translateX.value = Math.max(event.translationX, -80);
       }
     })
     .onEnd((event) => {
-      const threshold = -40; // Swipe threshold
+      const threshold = -40;
       
       if (event.translationX < threshold) {
-        // Reveal delete action
         translateX.value = withSpring(-70);
         runOnJS(triggerHaptic)();
         runOnJS(setIsRevealed)(true);
       } else {
-        // Snap back
         translateX.value = withSpring(0);
         runOnJS(setIsRevealed)(false);
       }
     });
 
-  // Animated styles
+  // Animated style for swipe effect
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
   }));
 
-  // Handle card press
+  // Handle card tap - close swipe or navigate
   const handleCardPress = () => {
     if (isRevealed) {
-      // Close swipe if revealed
       translateX.value = withSpring(0);
       setIsRevealed(false);
       return;
@@ -108,14 +99,12 @@ const DeckCard = ({ deck, onPress, onDelete }) => {
 
   return (
     <View style={styles.container}>
-      {/* Background Delete Action */}
       <View style={styles.deleteBackground}>
         <Pressable style={styles.deleteAction} onPress={handleDelete}>
           <Text style={styles.deleteText}>Delete</Text>
         </Pressable>
       </View>
 
-      {/* Main Card */}
       <GestureDetector gesture={panGesture}>
         <Animated.View style={[styles.card, animatedStyle]}>
           <Pressable onPress={handleCardPress} style={styles.cardContent}>
@@ -124,14 +113,13 @@ const DeckCard = ({ deck, onPress, onDelete }) => {
               <Text style={styles.cardCount}>{totalCards} cards</Text>
             </View>
             
-            {/* Progress Bar - Keep your existing design */}
             <View style={styles.progressContainer}>
               <View style={styles.progressBar}>
                 <View style={[
                   styles.progressFill, 
                   {
                     width: `${progress}%`,
-                    backgroundColor: getProgressColor()
+                    backgroundColor: getProgressColor(progress)
                   }
                 ]} />
               </View>

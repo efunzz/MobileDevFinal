@@ -1,11 +1,10 @@
 import { OPENAI_API_KEY } from '@env';
 
-
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
 
+// Generate flashcards using OpenAI API
 export const generateFlashcards = async (topic, cardCount = 10) => {
   try {
-    // Create the prompt for OpenAI
     const prompt = `Create exactly ${cardCount} flashcards about "${topic}". 
     
     Return ONLY a valid JSON array in this exact format:
@@ -16,7 +15,6 @@ export const generateFlashcards = async (topic, cardCount = 10) => {
     
     Make the questions educational and the answers clear and concise.`;
 
-    // Call OpenAI API using fetch
     const response = await fetch(OPENAI_API_URL, {
       method: 'POST',
       headers: {
@@ -36,33 +34,27 @@ export const generateFlashcards = async (topic, cardCount = 10) => {
       })
     });
 
-    // Check if request was successful
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(`API Error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
     }
 
-    // Parse the response
     const data = await response.json();
     const aiContent = data.choices[0].message.content;
-    console.log('🤖 AI Response:', aiContent);
 
-    // Parse JSON response
     const flashcards = JSON.parse(aiContent);
     
-    // Validate response
     if (!Array.isArray(flashcards) || flashcards.length === 0) {
       throw new Error('Invalid flashcards format from AI');
     }
 
-    console.log(`✅ Successfully generated ${flashcards.length} flashcards`);
     return {
       success: true,
       flashcards: flashcards
     };
 
   } catch (error) {
-    console.error('❌ Error generating flashcards:', error);
+    console.error('Error generating flashcards:', error);
     
     if (error.message.includes('401')) {
       return {
@@ -83,7 +75,7 @@ export const generateFlashcards = async (topic, cardCount = 10) => {
   }
 };
 
-// Test function to verify API connection
+// Test OpenAI API connection
 export const testOpenAIConnection = async () => {
   try {
     const result = await generateFlashcards('basic math', 2);

@@ -1,30 +1,31 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 
+// Calculate if card is due for review and days remaining
+const getDueStatus = (card) => {
+  if (!card.next_review_date || card.isEmpty || (!card.front && !card.back)) {
+    return { isDue: true, daysLeft: 0 };
+  }
+  
+  const now = new Date();
+  const reviewDate = new Date(card.next_review_date);
+  const daysLeft = Math.ceil((reviewDate - now) / (1000 * 60 * 60 * 24));
+  
+  return {
+    isDue: daysLeft <= 0,
+    daysLeft: Math.max(0, daysLeft)
+  };
+};
+
 const CardItem = ({ card, index, onPress }) => {
   const isEmpty = card.isEmpty || (!card.front && !card.back);
-  
-  // Calculate if card is due and days remaining
-  const getDueStatus = (card) => {
-    if (!card.next_review_date || isEmpty) return { isDue: true, daysLeft: 0 };
-    
-    const now = new Date();
-    const reviewDate = new Date(card.next_review_date);
-    const daysLeft = Math.ceil((reviewDate - now) / (1000 * 60 * 60 * 24));
-    
-    return {
-      isDue: daysLeft <= 0,
-      daysLeft: Math.max(0, daysLeft)
-    };
-  };
-
   const { isDue, daysLeft } = getDueStatus(card);
   
   return (
     <Pressable 
       style={[
         styles.card,
-        !isDue && !isEmpty && styles.cardNotDue, // Add transparency for non-due cards
+        !isDue && !isEmpty && styles.cardNotDue,
         isEmpty && styles.cardEmpty
       ]} 
       onPress={onPress}
@@ -33,7 +34,6 @@ const CardItem = ({ card, index, onPress }) => {
         <View style={styles.cardHeader}>
           <Text style={styles.cardNumber}>Card {index + 1}</Text>
           
-          {/* Enhanced status badge with due information */}
           {isEmpty ? (
             <View style={[styles.statusBadge, styles.emptyBadge]}>
               <Text style={[styles.statusText, styles.emptyText]}>Empty</Text>
@@ -67,7 +67,6 @@ const CardItem = ({ card, index, onPress }) => {
           )}
         </View>
         
-        {/* Study progress indicator */}
         {!isEmpty && card.study_count && (
           <View style={styles.studyProgress}>
             <Text style={styles.studyProgressText}>
@@ -99,7 +98,7 @@ const styles = StyleSheet.create({
     borderColor: '#f0f0f0',
   },
   cardNotDue: {
-    opacity: 0.5, // Make non-due cards translucent
+    opacity: 0.5,
     backgroundColor: '#f8f9fa',
   },
   cardEmpty: {

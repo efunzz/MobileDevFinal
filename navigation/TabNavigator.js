@@ -1,16 +1,15 @@
-// navigation/TabNavigator.js
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
-
 import HomeScreen from '../screens/HomeScreen';
 import SettingsScreen from '../screens/SettingScreen';
 import HomeStackNavigator from './HomeStackNavigator';
 
 const Tab = createBottomTabNavigator();
 
-export default function TabNavigator() {
+// Main tab navigation with Home and Settings
+const TabNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -40,4 +39,6 @@ export default function TabNavigator() {
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
-}
+};
+
+export default TabNavigator;

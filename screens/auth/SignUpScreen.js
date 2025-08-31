@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, TextInput, Alert } from 'react-native';
-import { supabase } from '../../lib/supabase'; // Uncommented
+import { supabase } from '../../lib/supabase';
 
-export default function SignupScreen({ navigation }) {
+const SignupScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Create new user account with validation
   const handleSignup = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please enter both email and password');
@@ -29,14 +30,12 @@ export default function SignupScreen({ navigation }) {
       if (error) {
         Alert.alert('Signup Failed', error.message);
       } else if (!data.session) {
-        // User needs to confirm email
         Alert.alert(
           'Success',
           'Account created! Please check your email to verify your account before logging in.',
           [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
         );
       }
-      // If data.session exists, user is automatically logged in and StackNavigator handles it
     } catch (e) {
       console.error('Signup error:', e);
       Alert.alert('Unexpected Error', e.message);
@@ -84,7 +83,7 @@ export default function SignupScreen({ navigation }) {
       </TouchableOpacity>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -134,3 +133,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 });
+
+export default SignupScreen;

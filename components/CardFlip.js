@@ -1,17 +1,18 @@
 import React, { useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import { View, StyleSheet, Animated } from 'react-native';
 
-export default function FlipCard({ 
-  frontContent, 
-  backContent, 
-  isFlipped, 
+export default function FlipCard({
+  frontContent,
+  backContent,
+  isFlipped,
   style,
   frontStyle,
   backStyle,
   duration = 150
 }) {
- const flipAnimation = useRef(new Animated.Value(0)).current;
+  const flipAnimation = useRef(new Animated.Value(0)).current;
 
+  // Animate card flip when isFlipped changes
   useEffect(() => {
     Animated.timing(flipAnimation, {
       toValue: isFlipped ? 1 : 0,
@@ -20,28 +21,31 @@ export default function FlipCard({
     }).start();
   }, [isFlipped, duration]);
 
+  // Front side rotation animation
   const frontInterpolate = flipAnimation.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '180deg'],
   });
 
+  // Back side rotation animation
   const backInterpolate = flipAnimation.interpolate({
     inputRange: [0, 1],
     outputRange: ['180deg', '360deg'],
   });
 
-  // Add opacity interpolation to hide sides at the right time
+  // Front side opacity animation
   const frontOpacity = flipAnimation.interpolate({
-    inputRange: [0, 0.49, 0.51, 1],  // Very narrow transition window
+    inputRange: [0, 0.49, 0.51, 1],
     outputRange: [1, 1, 0, 0],
     extrapolate: 'clamp',
   });
 
+  // Back side opacity animation
   const backOpacity = flipAnimation.interpolate({
-    inputRange: [0, 0.49, 0.51, 1],  // Very narrow transition window  
+    inputRange: [0, 0.49, 0.51, 1],
     outputRange: [0, 0, 1, 1],
     extrapolate: 'clamp',
- });
+  });
 
   const frontAnimatedStyle = {
     transform: [{ rotateY: frontInterpolate }],
@@ -55,20 +59,16 @@ export default function FlipCard({
 
   return (
     <View style={[styles.container, style]}>
-      {/* Front Side */}
       <Animated.View style={[
-        styles.cardSide, 
-        styles.cardFront, 
+        styles.cardSide,
         frontAnimatedStyle,
         frontStyle
       ]}>
         {frontContent}
       </Animated.View>
 
-      {/* Back Side */}
       <Animated.View style={[
-        styles.cardSide, 
-        styles.cardBack, 
+        styles.cardSide,
         backAnimatedStyle,
         backStyle
       ]}>
@@ -99,11 +99,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
-  },
-  cardFront: {
-    // Front side specific styles
-  },
-  cardBack: {
-    // Back side specific styles
   },
 });

@@ -17,14 +17,14 @@ class NotificationService {
     this.responseListener = null;
   }
 
-  // Initialize notification service
+  // Initialize notification service and register for push notifications
   async initialize() {
     this.expoPushToken = await this.registerForPushNotifications();
     this.setupListeners();
     return this.expoPushToken;
   }
 
-  // Register for push notifications 
+  // Register device for push notifications
   async registerForPushNotifications() {
     let token;
 
@@ -53,23 +53,18 @@ class NotificationService {
     return token;
   }
 
-  // Setup notification listeners
+  // Setup notification event listeners
   setupListeners() {
     this.notificationListener = Notifications.addNotificationReceivedListener(notification => {
-      console.log('Notification received:', notification);
+      console.error('Notification received:', notification);
     });
 
     this.responseListener = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log('Notification response:', response);
+      console.error('Notification response:', response);
     });
-    Alert.alert(
-      '🔔 Notification Triggered!', 
-      notification.request.content.body,
-      [{ text: 'Perfect!' }]
-    );
   }
 
-  // Cleanup listeners
+  // Remove notification listeners
   cleanup() {
     if (this.notificationListener) {
       this.notificationListener.remove();
@@ -79,19 +74,7 @@ class NotificationService {
     }
   }
 
-  // Test notification 
-  async sendTestNotification() {
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: "🧪 Test Notification",
-        body: "Your notifications are working perfectly!",
-        data: { data: 'test notification' },
-      },
-      trigger: { seconds: 30 },
-    });
-  }
-
-  // Schedule daily reminder
+  // Schedule daily study reminder notification
   async scheduleDailyReminder(hour, minute) {
     try {
       await Notifications.cancelAllScheduledNotificationsAsync();
@@ -108,14 +91,13 @@ class NotificationService {
 
       await Notifications.scheduleNotificationAsync({
         content: {
-          title: "📚 Time to Study!",
+          title: "Time to Study!",
           body: "Your flashcards are waiting. Let's build that knowledge!",
           data: { data: 'daily reminder' },
         },
         trigger: { seconds: secondsUntilTarget, repeats: false },
       });
 
-      console.log(`Daily reminder scheduled in ${secondsUntilTarget} seconds`);
       return true;
     } catch (error) {
       console.error('Error scheduling reminder:', error);
@@ -123,12 +105,12 @@ class NotificationService {
     }
   }
 
-  // Cancel all notifications
+  // Cancel all scheduled notifications
   async cancelAllNotifications() {
     await Notifications.cancelAllScheduledNotificationsAsync();
   }
 
-  // Load reminder settings
+  // Load saved reminder preferences from storage
   async loadReminderSettings() {
     try {
       const enabled = await AsyncStorage.getItem('reminderEnabled');
@@ -144,7 +126,7 @@ class NotificationService {
     }
   }
 
-  // Save reminder settings
+  // Save reminder preferences to storage
   async saveReminderSettings(enabled, time) {
     try {
       await AsyncStorage.setItem('reminderEnabled', JSON.stringify(enabled));
@@ -156,11 +138,10 @@ class NotificationService {
     }
   }
 
-  // Get push token
+  // Get current push token
   getPushToken() {
     return this.expoPushToken;
   }
 }
 
-// Export singleton instance
 export default new NotificationService();

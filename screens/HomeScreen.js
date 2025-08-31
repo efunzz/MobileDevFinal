@@ -11,44 +11,46 @@ import Animated, {
   withTiming,
   interpolate,
 } from 'react-native-reanimated';
-
 import AddDeckModal from '../components/AddDeckModal';
 import DeckCard from '../components/DeckCard';
 import AiCreateModal from '../components/AiCreateModal';
 
-export default function HomeScreen() {
+// Main dashboard screen displaying user's flashcard decks
+const HomeScreen = () => {
   const navigation = useNavigation();
   const [modalVisible, setModalVisible] = useState(false);
   const [decks, setDecks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [aiModalVisible, setAiModalVisible] = useState(false);
   
-  // FAB animation values
   const fabExpanded = useSharedValue(0);
   const [isFabOpen, setIsFabOpen] = useState(false);
 
-  // Modal handlers
+  // Open manual deck creation modal
   const handleOpenModal = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setModalVisible(true);
     toggleFAB();
   };
 
+  // Close manual deck creation modal
   const handleCloseModal = () => {
     setModalVisible(false);
   };
 
+  // Open AI deck creation modal
   const handleOpenAIModal = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setAiModalVisible(true);
     toggleFAB();
   };
   
+  // Close AI deck creation modal
   const handleCloseAIModal = () => {
     setAiModalVisible(false);
   };
 
-  // FAB toggle function
+  // Toggle floating action button menu
   const toggleFAB = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const newState = !isFabOpen;
@@ -59,7 +61,7 @@ export default function HomeScreen() {
     });
   };
 
-  // Backdrop animation
+  // Backdrop animation for FAB menu
   const backdropStyle = useAnimatedStyle(() => {
     return {
       opacity: withTiming(fabExpanded.value * 0.5, { duration: 10 }),
@@ -74,7 +76,7 @@ export default function HomeScreen() {
     };
   });
 
-  // Sub-button animations
+  // Create deck sub-button animation
   const createSubButtonStyle = useAnimatedStyle(() => {
     const translateY = interpolate(fabExpanded.value, [0, 1], [0, -70]);
     const opacity = interpolate(fabExpanded.value, [0, 0.5, 1], [0, 0, 1]);
@@ -89,6 +91,7 @@ export default function HomeScreen() {
     };
   });
 
+  // AI create sub-button animation
   const aiSubButtonStyle = useAnimatedStyle(() => {
     const translateY = interpolate(fabExpanded.value, [0, 1], [0, -120]);
     const opacity = interpolate(fabExpanded.value, [0, 0.5, 1], [0, 0, 1]);
@@ -103,7 +106,7 @@ export default function HomeScreen() {
     };
   });
 
-  // Fetch decks from database
+  // Load decks with card statistics from database
   const fetchDecks = async () => {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
@@ -113,7 +116,7 @@ export default function HomeScreen() {
       setLoading(false);
       return;
     }
-  
+
     try {
       const { data, error } = await supabase
         .from('decks')
@@ -129,7 +132,7 @@ export default function HomeScreen() {
         `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
-  
+
       if (error) {
         console.error('Error fetching decks:', error);
         setDecks([]);
@@ -170,41 +173,41 @@ export default function HomeScreen() {
     }
   };
 
-  // Refresh data when screen comes into focus
+  // Refresh decks when screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
       fetchDecks();
     }, [])
   );
 
-  // Handle creating new deck
+  // Refresh deck list after creation
   const handleCreateDeck = async (newDeck) => {
     await fetchDecks();
   };
 
-  // Handle deleting deck
+  // Delete deck and all associated cards
   const handleDeleteDeck = async (deckId) => {
     try {
       const { error: cardsError } = await supabase
         .from('cards')
         .delete()
         .eq('deck_id', deckId);
-  
+
       if (cardsError) {
         console.error('Error deleting cards:', cardsError);
         throw cardsError;
       }
-  
+
       const { error: deckError } = await supabase
         .from('decks')
         .delete()
         .eq('id', deckId);
-  
+
       if (deckError) {
         console.error('Error deleting deck:', deckError);
         throw deckError;
       }
-  
+
       setDecks(prev => prev.filter(deck => deck.id !== deckId));
     } catch (error) {
       console.error('Error deleting deck:', error);
@@ -212,13 +215,13 @@ export default function HomeScreen() {
     }
   };
 
-  // Navigate to card list screen
+  // Navigate to selected deck's card list
   const handleDeckPress = (deck) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     navigation.navigate('CardList', { deck });
   };
 
-  // Render individual deck card
+  // Render individual deck in FlatList
   const renderDeckItem = ({ item }) => (
     <DeckCard 
       deck={item} 
@@ -227,7 +230,6 @@ export default function HomeScreen() {
     />
   );
 
-  // Loading screen
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -241,7 +243,6 @@ export default function HomeScreen() {
     );
   }
 
-  // Empty state screen
   if (decks.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
@@ -268,7 +269,6 @@ export default function HomeScreen() {
     );
   }
 
-  // Main screen with expandable FAB
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -286,7 +286,6 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       />
 
-      {/* Backdrop overlay */}
       <Animated.View 
         style={[styles.backdrop, backdropStyle]} 
         pointerEvents={isFabOpen ? "auto" : "none"}
@@ -294,23 +293,19 @@ export default function HomeScreen() {
         <Pressable style={styles.backdropPressable} onPress={toggleFAB} />
       </Animated.View>
 
-      {/* Floating Action Buttons */}
       <View style={styles.fabContainer}>
-        {/* AI Create Sub-button */}
         <Animated.View style={[styles.subButton, aiSubButtonStyle]}>
           <Pressable style={[styles.fabButton, styles.aiButton]} onPress={handleOpenAIModal}>
             <Ionicons name="sparkles" size={20} color="white" />
           </Pressable>
         </Animated.View>
 
-        {/* Create Deck Sub-button */}
         <Animated.View style={[styles.subButton, createSubButtonStyle]}>
           <Pressable style={[styles.fabButton, styles.createButton]} onPress={handleOpenModal}>
             <Ionicons name="add" size={24} color="white" />
           </Pressable>
         </Animated.View>
 
-        {/* Main FAB */}
         <Pressable style={styles.mainFab} onPress={toggleFAB}>
           <Animated.View style={mainFabStyle}>
             <Ionicons name="ellipsis-vertical" size={24} color="white" />
@@ -318,7 +313,6 @@ export default function HomeScreen() {
         </Pressable>
       </View>
 
-      {/* Modals */}
       <AddDeckModal
         visible={modalVisible}
         hideModal={handleCloseModal}
@@ -332,7 +326,7 @@ export default function HomeScreen() {
       />
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -457,3 +451,5 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
 });
+
+export default HomeScreen;

@@ -12,10 +12,10 @@ import StudyCard from '../components/StudyCard';
 import { supabase } from '../lib/supabase';
 import { calculateNextReviewDate } from '../utils/spacedRep';
 
-export default function StudyScreen({ route, navigation }) {
+// Main study session screen with spaced repetition algorithm
+const StudyScreen = ({ route, navigation }) => {
   const { cards, deckName } = route.params || {};
   
-  // Filter out empty cards for studying
   const studyCards = cards.filter(card => card.front?.trim() || card.back?.trim());
   
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -37,10 +37,9 @@ export default function StudyScreen({ route, navigation }) {
     setShowAnswer(true);
   };
 
-  // Save user confidence rating to database with spaced repetition
+  // Save user confidence rating with spaced repetition scheduling
   const saveConfidenceRating = async (cardId, confidenceLevel) => {
     try {
-      // Calculate next review date using spaced repetition algorithm
       const currentInterval = currentCard.review_interval || 0;
       const { nextReviewDate, interval } = calculateNextReviewDate(confidenceLevel, currentInterval);
       
@@ -54,7 +53,7 @@ export default function StudyScreen({ route, navigation }) {
           study_count: (currentCard.study_count || 0) + 1
         })
         .eq('id', cardId);
-  
+
       if (error) {
         console.error('Error saving confidence rating:', error);
       }
@@ -63,10 +62,9 @@ export default function StudyScreen({ route, navigation }) {
     }
   };
 
-  // Process confidence rating and move to next card
+  // Process confidence rating and advance to next card
   const handleConfidenceRating = async (rating) => {
     try {
-      // Add haptic feedback based on confidence rating
       switch (rating) {
         case 'again':
           await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
@@ -84,15 +82,14 @@ export default function StudyScreen({ route, navigation }) {
     } catch (error) {
       console.error('Haptic feedback error:', error);
     }
-  
-    // Save with spaced repetition algorithm
+
     await saveConfidenceRating(currentCard.id, rating);
     
     setStudyStats(prev => ({
       ...prev,
       [rating]: prev[rating] + 1
     }));
-  
+
     if (isLastCard) {
       handleFinishStudy();
     } else {
@@ -218,7 +215,7 @@ export default function StudyScreen({ route, navigation }) {
       </View>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -369,3 +366,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
+export default StudyScreen;

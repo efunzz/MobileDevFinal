@@ -2,34 +2,95 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, SafeAreaView, Pressable, Alert } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { getDueCards } from '../utils/spacedRep';
-
-//import components
 import CardItem from '../components/CardItem';
 import EditCardModal from '../components/EditCardModal';
 
-export default function CardListScreen({ route, navigation }) {
+// Calculate if card is due and days remaining
+const getDueStatus = (card) => {
+  if (!card.next_review_date) return { isDue: true, daysLeft: 0 };
+  
+  const now = new Date();
+  const reviewDate = new Date(card.next_review_date);
+  const daysLeft = Math.ceil((reviewDate - now) / (1000 * 60 * 60 * 24));
+  
+  return {
+    isDue: daysLeft <= 0,
+    daysLeft: Math.max(0, daysLeft)
+  };
+};
+
+// Enhanced card item with due status display
+const EnhancedCardItem = ({ card, index, onPress }) => {
+  const { isDue, daysLeft } = getDueStatus(card);
+  const isEmpty = !card.front?.trim() && !card.back?.trim();
+
+  return (
+    <Pressable 
+      style={[
+        styles.cardItem,
+        !isDue && !isEmpty && styles.cardNotDue,
+        isEmpty && styles.cardEmpty
+      ]}
+      onPress={() => onPress(card, index)}
+    >
+      <View style={styles.cardContent}>
+        <Text style={styles.cardIndex}>#{index + 1}</Text>
+        
+        {isEmpty ? (
+          <Text style={styles.emptyCardText}>Tap to add content</Text>
+        ) : (
+          <View style={styles.cardPreview}>
+            <Text style={styles.cardFront} numberOfLines={2}>
+              {card.front || 'No question'}
+            </Text>
+            <Text style={styles.cardBack} numberOfLines={1}>
+              {card.back || 'No answer'}
+            </Text>
+          </View>
+        )}
+        
+        {!isEmpty && !isDue && (
+          <View style={styles.dueIndicator}>
+            <Text style={styles.dueText}>Due in {daysLeft}d</Text>
+          </View>
+        )}
+        
+        {!isEmpty && isDue && (
+          <View style={styles.readyIndicator}>
+            <Text style={styles.readyText}>Ready!</Text>
+          </View>
+        )}
+      </View>
+    </Pressable>
+  );
+};
+
+// Main screen displaying list of flashcards with study options
+const CardListScreen = ({ route, navigation }) => {
   const { deck } = route.params || {};
   const [cards, setCards] = useState([]);
   const [editingCard, setEditingCard] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // Load cards from database
   const fetchCards = async () => {
     if (!deck?.id) {
       setLoading(false);
       return;
     }
-  
+
     setLoading(true);
-  
+
     try {
       const { data, error } = await supabase
         .from('cards')
         .select('*')
         .eq('deck_id', deck.id)
         .order('position', { ascending: true });
-  
+
       if (error) {
+        console.error('Error fetching cards:', error);
         Alert.alert('Error', 'Failed to load cards');
         setCards([]);
       } else {
@@ -47,6 +108,7 @@ export default function CardListScreen({ route, navigation }) {
         }
       }
     } catch (err) {
+      console.error('Error loading cards:', err);
       Alert.alert('Error', 'Failed to load cards');
     } finally {
       setLoading(false);
@@ -74,6 +136,7 @@ export default function CardListScreen({ route, navigation }) {
         .select();
 
       if (error) {
+        console.error('Error creating cards:', error);
         Alert.alert('Error', 'Failed to create cards');
       } else {
         const mappedCards = data.map(card => ({
@@ -97,19 +160,20 @@ export default function CardListScreen({ route, navigation }) {
         front_image: cardData.frontImage,
         back_image: cardData.backImage
       };
-  
+
       const { data, error } = await supabase
         .from('cards')
         .update(updateData)
         .eq('id', cardData.id)
         .select()
         .single();
-  
+
       if (error) {
+        console.error('Error saving card:', error);
         Alert.alert('Error', 'Failed to save card');
         return false;
       }
-  
+
       return {
         ...data,
         front: data.question || '',
@@ -118,6 +182,7 @@ export default function CardListScreen({ route, navigation }) {
         backImage: data.back_image
       };
     } catch (err) {
+      console.error('Error saving card:', err);
       Alert.alert('Error', 'Failed to save card');
       return false;
     }
@@ -128,13 +193,13 @@ export default function CardListScreen({ route, navigation }) {
     fetchCards();
   }, [deck?.id]);
 
-  // Handle card press to edit
+  // Open card editor modal
   const handleCardPress = (card, index) => {
     setEditingCard({ ...card, index });
     setModalVisible(true);
   };
 
-  // Handle saving edited card
+  // Save edited card to database and update state
   const handleSaveCard = async (updatedCard) => {
     const savedCard = await saveCardToSupabase(updatedCard);
     
@@ -157,7 +222,7 @@ export default function CardListScreen({ route, navigation }) {
     setEditingCard(null);
   };
 
-  // Handle study button with due cards filtering
+  // Navigate to study screen with due cards filtering
   const handleStartStudy = () => {
     const filledCards = cards.filter(card => card.front?.trim() || card.back?.trim());
     
@@ -166,12 +231,11 @@ export default function CardListScreen({ route, navigation }) {
       return;
     }
 
-    // Check for due cards
     const dueCards = getDueCards(filledCards);
     
     if (dueCards.length === 0) {
       Alert.alert(
-        'No Cards Due! 🎉', 
+        'No Cards Due!', 
         'All cards are scheduled for future review. Study all cards anyway?',
         [
           { 
@@ -187,19 +251,16 @@ export default function CardListScreen({ route, navigation }) {
       return;
     }
 
-    // Study only due cards
     navigation.navigate('StudyScreen', { 
       cards: dueCards, 
       deckName: deck.name 
     });
   };
 
-  // Calculate card statistics
   const filledCards = cards.filter(card => card.front?.trim() || card.back?.trim());
   const dueCards = getDueCards(filledCards);
   const totalCards = cards.length;
 
-  // Show loading screen
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -212,7 +273,6 @@ export default function CardListScreen({ route, navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header with deck stats */}
       <View style={styles.header}>
         <Text style={styles.deckName}>{deck?.name || 'Unknown Deck'}</Text>
         <View style={styles.statsContainer}>
@@ -235,7 +295,6 @@ export default function CardListScreen({ route, navigation }) {
         </View>
       </View>
 
-      {/* Cards List */}
       <FlatList
         data={cards}
         keyExtractor={(item) => item.id}
@@ -243,14 +302,13 @@ export default function CardListScreen({ route, navigation }) {
           <EnhancedCardItem
             card={item}
             index={index}
-            onPress={() => handleCardPress(item, index)}
+            onPress={handleCardPress}
           />
         )}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
       />
 
-      {/* Study Button */}
       {filledCards.length > 0 && (
         <View style={styles.bottomContainer}>
           <Pressable 
@@ -266,13 +324,12 @@ export default function CardListScreen({ route, navigation }) {
             ]}>
               {dueCards.length > 0 
                 ? `Study Now (${dueCards.length} due)` 
-                : 'All Studied! 🎉 Tap to study anyway'}
+                : 'All Studied! Tap to study anyway'}
             </Text>
           </Pressable>
         </View>
       )}
 
-      {/* Edit Card Modal */}
       <EditCardModal
         visible={modalVisible}
         card={editingCard}
@@ -280,67 +337,6 @@ export default function CardListScreen({ route, navigation }) {
         onClose={handleCloseModal}
       />
     </SafeAreaView>
-  );
-}
-
-// Enhanced CardItem component that shows due status
-const EnhancedCardItem = ({ card, index, onPress }) => {
-  // Calculate if card is due and days remaining
-  const getDueStatus = (card) => {
-    if (!card.next_review_date) return { isDue: true, daysLeft: 0 };
-    
-    const now = new Date();
-    const reviewDate = new Date(card.next_review_date);
-    const daysLeft = Math.ceil((reviewDate - now) / (1000 * 60 * 60 * 24));
-    
-    return {
-      isDue: daysLeft <= 0,
-      daysLeft: Math.max(0, daysLeft)
-    };
-  };
-
-  const { isDue, daysLeft } = getDueStatus(card);
-  const isEmpty = !card.front?.trim() && !card.back?.trim();
-
-  return (
-    <Pressable 
-      style={[
-        styles.cardItem,
-        !isDue && !isEmpty && styles.cardNotDue, // Add transparency for non-due cards
-        isEmpty && styles.cardEmpty
-      ]}
-      onPress={() => onPress(card, index)}
-    >
-      <View style={styles.cardContent}>
-        <Text style={styles.cardIndex}>#{index + 1}</Text>
-        
-        {isEmpty ? (
-          <Text style={styles.emptyCardText}>Tap to add content</Text>
-        ) : (
-          <View style={styles.cardPreview}>
-            <Text style={styles.cardFront} numberOfLines={2}>
-              {card.front || 'No question'}
-            </Text>
-            <Text style={styles.cardBack} numberOfLines={1}>
-              {card.back || 'No answer'}
-            </Text>
-          </View>
-        )}
-        
-        {/* Due status indicator */}
-        {!isEmpty && !isDue && (
-          <View style={styles.dueIndicator}>
-            <Text style={styles.dueText}>Due in {daysLeft}d</Text>
-          </View>
-        )}
-        
-        {!isEmpty && isDue && (
-          <View style={styles.readyIndicator}>
-            <Text style={styles.readyText}>Ready!</Text>
-          </View>
-        )}
-      </View>
-    </Pressable>
   );
 };
 
@@ -400,8 +396,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingBottom: 100,
   },
-  
-  // Card Item Styles
   cardItem: {
     backgroundColor: '#ffffff',
     marginHorizontal: 20,
@@ -418,7 +412,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   cardNotDue: {
-    opacity: 0.4, // Make non-due cards translucent
+    opacity: 0.4,
     backgroundColor: '#f8f9fa',
   },
   cardEmpty: {
@@ -459,8 +453,6 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     lineHeight: 20,
   },
-  
-  // Due Status Indicators
   dueIndicator: {
     position: 'absolute',
     top: 0,
@@ -493,8 +485,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#065f46',
   },
-
-  // Bottom Container
   bottomContainer: {
     position: 'absolute',
     bottom: 0,
@@ -531,3 +521,5 @@ const styles = StyleSheet.create({
     color: '#d1d5db',
   },
 });
+
+export default CardListScreen;

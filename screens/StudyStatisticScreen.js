@@ -9,10 +9,19 @@ import {
 } from 'react-native';
 import PieChart from 'react-native-pie-chart';
 
-export default function StudyStatisticsScreen({ route, navigation }) {
+// Generate performance message based on confidence ratings
+const getPerformanceMessage = (goodPercent, easyPercent) => {
+  const easyAndGoodPercent = goodPercent + easyPercent;
+  if (easyAndGoodPercent >= 80) return { text: "Excellent work!", color: '#10b981' };
+  if (easyAndGoodPercent >= 60) return { text: "Great progress!", color: '#3b82f6' };
+  if (easyAndGoodPercent >= 40) return { text: "Keep practicing!", color: '#f59e0b' };
+  return { text: "Review these cards more!", color: '#ef4444' };
+};
+
+// Study completion screen showing performance statistics and pie chart
+const StudyStatisticsScreen = ({ route, navigation }) => {
   const { studyStats, deckName } = route.params || {};
   
-  // Add safety checks
   if (!studyStats) {
     return (
       <SafeAreaView style={styles.container}>
@@ -26,19 +35,15 @@ export default function StudyStatisticsScreen({ route, navigation }) {
     );
   }
   
-  // Calculate totals with safety checks
   const totalCards = (studyStats.again || 0) + (studyStats.hard || 0) + (studyStats.good || 0) + (studyStats.easy || 0);
   
-  // Calculate percentages
   const againPercent = totalCards > 0 ? Math.round(((studyStats.again || 0) / totalCards) * 100) : 0;
   const hardPercent = totalCards > 0 ? Math.round(((studyStats.hard || 0) / totalCards) * 100) : 0;
   const goodPercent = totalCards > 0 ? Math.round(((studyStats.good || 0) / totalCards) * 100) : 0;
   const easyPercent = totalCards > 0 ? Math.round(((studyStats.easy || 0) / totalCards) * 100) : 0;
 
-  // Data for pie chart - correct format for react-native-pie-chart
   const widthAndHeight = 180;
   
-  // Create series array in the correct format
   const series = [];
   if (studyStats.again > 0) {
     series.push({ value: studyStats.again, color: '#ef4444' });
@@ -53,12 +58,10 @@ export default function StudyStatisticsScreen({ route, navigation }) {
     series.push({ value: studyStats.easy, color: '#10b981' });
   }
   
-  // Fallback if no data
   if (series.length === 0) {
     series.push({ value: 1, color: '#e5e7eb' });
   }
   
-  // Create chartData for the percentage display
   const chartData = [];
   if (studyStats.again > 0) {
     chartData.push({ name: 'Again', value: studyStats.again, color: '#ef4444', percentage: againPercent });
@@ -73,44 +76,34 @@ export default function StudyStatisticsScreen({ route, navigation }) {
     chartData.push({ name: 'Easy', value: studyStats.easy, color: '#10b981', percentage: easyPercent });
   }
 
-  // Performance message
-  const getPerformanceMessage = () => {
-    const easyAndGoodPercent = goodPercent + easyPercent;
-    if (easyAndGoodPercent >= 80) return { text: "Excellent work! 🎉", color: '#10b981' };
-    if (easyAndGoodPercent >= 60) return { text: "Great progress! 📈", color: '#3b82f6' };
-    if (easyAndGoodPercent >= 40) return { text: "Keep practicing! 💪", color: '#f59e0b' };
-    return { text: "Review these cards more! 📚", color: '#ef4444' };
-  };
+  const performanceMessage = getPerformanceMessage(goodPercent, easyPercent);
 
-  const performanceMessage = getPerformanceMessage();
-
+  // Navigate back to study screen with same cards
   const handleStudyAgain = () => {
     navigation.navigate('StudyScreen', { 
-      cards: route.params.cards // Pass the original cards back
+      cards: route.params.cards
     });
   };
 
+  // Return to home screen
   const handleDone = () => {
-    navigation.popToTop(); // Go back to home screen
+    navigation.popToTop();
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Study Complete!</Text>
           <Text style={styles.deckName}>{deckName}</Text>
         </View>
 
-        {/* Performance Message */}
         <View style={styles.messageContainer}>
           <Text style={[styles.performanceMessage, { color: performanceMessage.color }]}>
             {performanceMessage.text}
           </Text>
         </View>
 
-        {/* Doughnut Pie Chart */}
         <View style={styles.chartContainer}>
           <View style={styles.chartWrapper}>
             <PieChart
@@ -119,7 +112,6 @@ export default function StudyStatisticsScreen({ route, navigation }) {
               cover={0.6}
             />
             
-            {/* Center content */}
             <View style={styles.centerContent}>
               <Text style={styles.totalCardsText}>{totalCards}</Text>
               <Text style={styles.totalCardsLabel}>cards</Text>
@@ -127,7 +119,6 @@ export default function StudyStatisticsScreen({ route, navigation }) {
           </View>
         </View>
 
-        {/* Simple percentage grid */}
         <View style={styles.percentageGrid}>
           {chartData.map((item, index) => (
             <View key={index} style={styles.percentageItem}>
@@ -138,7 +129,6 @@ export default function StudyStatisticsScreen({ route, navigation }) {
           ))}
         </View>
 
-        {/* Statistics Cards */}
         <View style={styles.statsGrid}>
           <View style={styles.statCard}>
             <Text style={[styles.statPercentage, { color: performanceMessage.color }]}>
@@ -154,11 +144,8 @@ export default function StudyStatisticsScreen({ route, navigation }) {
             <Text style={styles.statLabel}>Need Practice</Text>
           </View>
         </View>
-
-
       </ScrollView>
 
-      {/* Bottom Actions */}
       <View style={styles.bottomContainer}>
         <Pressable style={styles.studyAgainButton} onPress={handleStudyAgain}>
           <Text style={styles.studyAgainButtonText}>Study Again</Text>
@@ -170,7 +157,7 @@ export default function StudyStatisticsScreen({ route, navigation }) {
       </View>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -300,7 +287,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     textAlign: 'center',
   },
-
   bottomContainer: {
     position: 'absolute',
     bottom: 0,
@@ -362,3 +348,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
+export default StudyStatisticsScreen;

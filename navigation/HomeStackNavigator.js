@@ -1,8 +1,6 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
-
-//import screens
 import HomeScreen from '../screens/HomeScreen';
 import CardListScreen from '../screens/CardListScreen';
 import StudyScreen from '../screens/StudyScreen';
@@ -10,7 +8,8 @@ import StudyStatisticsScreen from '../screens/StudyStatisticScreen';
 
 const Stack = createStackNavigator();
 
-export default function HomeStackNavigator() {
+// Stack navigation for home section screens
+const HomeStackNavigator = () => {
   return (
     <Stack.Navigator
       screenOptions={{
@@ -19,14 +18,14 @@ export default function HomeStackNavigator() {
           shadowColor: 'transparent',
           elevation: 0,
         },
-        headerTintColor: '#000000', // Makes back button black
+        headerTintColor: '#000000',
         headerTitleStyle: {
           fontWeight: '600',
           fontSize: 18,
           color: '#000000',
         },
-        headerBackTitleVisible: false, 
-        headerBackTitle: '',// Hides "Back" text
+        headerBackTitleVisible: false,
+        headerBackTitle: '',
         headerLeftContainerStyle: {
           paddingLeft: 16,
         },
@@ -49,9 +48,9 @@ export default function HomeStackNavigator() {
         component={CardListScreen}
         options={({ route }) => ({
           headerShown: true,
-          title:  'Cards',
+          title: 'Cards',
           headerStyle: {
-            backgroundColor: '#f9fafb', // Match your app background
+            backgroundColor: '#f9fafb',
             shadowColor: 'transparent',
             elevation: 0,
             borderBottomWidth: 1,
@@ -59,7 +58,7 @@ export default function HomeStackNavigator() {
           },
         })}
       />
-       <Stack.Screen 
+      <Stack.Screen 
         name="StudyScreen" 
         component={StudyScreen}
         options={{ 
@@ -77,4 +76,6 @@ export default function HomeStackNavigator() {
       />
     </Stack.Navigator>
   );
-}
+};
+
+export default HomeStackNavigator;

@@ -21,7 +21,7 @@ export default function AiCreateModal({ visible, onClose, onDeckCreated }) {
   const [cardCount, setCardCount] = useState(8);
   const [loading, setLoading] = useState(false);
 
-  // Reset form when modal opens
+  // Reset form and close modal
   const handleClose = () => {
     setDeckName('');
     setTopic('');
@@ -30,7 +30,7 @@ export default function AiCreateModal({ visible, onClose, onDeckCreated }) {
     onClose();
   };
 
-  // Generate deck with AI
+  // Generate AI flashcards and save to database
   const handleGenerateDeck = async () => {
     if (!deckName.trim() || !topic.trim()) {
       Alert.alert('Error', 'Please enter both deck name and topic');
@@ -38,11 +38,8 @@ export default function AiCreateModal({ visible, onClose, onDeckCreated }) {
     }
 
     setLoading(true);
-
+    
     try {
-      console.log(`Starting AI generation for: ${topic}`);
-      
-      // Step 1: Generate flashcards with AI
       const aiResult = await generateFlashcards(topic, cardCount);
       
       if (!aiResult.success) {
@@ -51,9 +48,6 @@ export default function AiCreateModal({ visible, onClose, onDeckCreated }) {
         return;
       }
 
-      console.log(`AI generated ${aiResult.flashcards.length} cards`);
-
-      // Step 2: Get current user
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError || !user) {
         Alert.alert('Error', 'Please log in to create decks');
@@ -61,7 +55,6 @@ export default function AiCreateModal({ visible, onClose, onDeckCreated }) {
         return;
       }
 
-      // Step 3: Create deck in database
       const { data: deckData, error: deckError } = await supabase
         .from('decks')
         .insert({
@@ -80,9 +73,6 @@ export default function AiCreateModal({ visible, onClose, onDeckCreated }) {
         return;
       }
 
-      console.log(`Created deck with ID: ${deckData.id}`);
-
-      // Step 4: Create cards in database
       const cardsToInsert = aiResult.flashcards.map((card, index) => ({
         deck_id: deckData.id,
         question: card.front,
@@ -103,9 +93,6 @@ export default function AiCreateModal({ visible, onClose, onDeckCreated }) {
         return;
       }
 
-      console.log(`Created ${cardsToInsert.length} cards`);
-
-      // Step 5: Success!
       Alert.alert(
         'AI Deck Created!',
         `Successfully generated "${deckName}" with ${aiResult.flashcards.length} cards about ${topic}`,
@@ -119,7 +106,6 @@ export default function AiCreateModal({ visible, onClose, onDeckCreated }) {
           }
         ]
       );
-
     } catch (error) {
       console.error('Error in AI deck generation:', error);
       Alert.alert('Error', 'Something went wrong during generation');
@@ -127,8 +113,10 @@ export default function AiCreateModal({ visible, onClose, onDeckCreated }) {
     }
   };
 
-  // Card count controls - INCREMENT BY 1
+  // Increase card count (max 25)
   const incrementCount = () => setCardCount(prev => Math.min(prev + 1, 25));
+
+  // Decrease card count (min 3)
   const decrementCount = () => setCardCount(prev => Math.max(prev - 1, 3));
 
   return (
@@ -139,13 +127,11 @@ export default function AiCreateModal({ visible, onClose, onDeckCreated }) {
             <View style={styles.modalContainer}>
               <View style={styles.modalContent}>
                 
-                {/* Header */}
                 <View style={styles.header}>
                   <Ionicons name="sparkles" size={24} color="#7c3aed" />
                   <Text style={styles.title}>Generate with AI</Text>
                 </View>
                 
-                {/* Deck Name Input */}
                 <View style={styles.inputContainer}>
                   <Text style={styles.label}>Deck Name</Text>
                   <TextInput
@@ -158,7 +144,6 @@ export default function AiCreateModal({ visible, onClose, onDeckCreated }) {
                   />
                 </View>
 
-                {/* Topic Input */}
                 <View style={styles.inputContainer}>
                   <Text style={styles.label}>Topic</Text>
                   <TextInput
@@ -172,7 +157,6 @@ export default function AiCreateModal({ visible, onClose, onDeckCreated }) {
                   />
                 </View>
 
-                {/* Card Count */}
                 <View style={styles.inputContainer}>
                   <Text style={styles.label}>Number of Cards (3-25)</Text>
                   <View style={styles.counterContainer}>
@@ -210,7 +194,6 @@ export default function AiCreateModal({ visible, onClose, onDeckCreated }) {
                   </View>
                 </View>
 
-                {/* Action Buttons */}
                 <View style={styles.buttonContainer}>
                   <Pressable 
                     style={[styles.button, styles.cancelButton]} 
@@ -221,7 +204,11 @@ export default function AiCreateModal({ visible, onClose, onDeckCreated }) {
                   </Pressable>
                   
                   <Pressable 
-                    style={[styles.button, styles.generateButton, loading && styles.disabledButton]} 
+                    style={[
+                      styles.button, 
+                      styles.generateButton, 
+                      loading && styles.disabledButton
+                    ]} 
                     onPress={handleGenerateDeck}
                     disabled={loading || !deckName.trim() || !topic.trim()}
                   >
