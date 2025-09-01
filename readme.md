@@ -197,6 +197,9 @@ npm test -- --coverage
 
 ---
 
+## GitHub Repository
+Source code available at: https://github.com/efunzz/MobileDevFinal
+
 **Course:** CM3050 Mobile Development  
 **Student:** Irfan Sofyan Bin Zufri  
 **Academic Year:** 2025
