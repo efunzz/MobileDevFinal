@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import StackNavigator from './navigation/StackNavigator';
-import { supabase } from './lib/supabase'; // Adjust path as needed
+import { supabase } from './lib/supabase';
 
 export default function App() {
   const [session, setSession] = useState(null);
@@ -24,7 +24,7 @@ export default function App() {
   }, []);
 
   if (loading) {
-    return null; // You can add a loading screen component here
+    return null; 
   }
 
   return (
